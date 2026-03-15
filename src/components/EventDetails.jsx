@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {Link, useParams} from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import ReviewForm from './ReviewForm';
 
@@ -9,10 +9,8 @@ const EventDetails = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Συνάρτηση για τη λήψη των δεδομένων
     const fetchData = async () => {
         try {
-            // Φέρνουμε το event και τα στατιστικά ταυτόχρονα
             const [eventRes, statsRes] = await Promise.all([
                 axios.get(`/api/events/${id}`),
                 axios.get(`/api/events/${id}/stats`)
@@ -26,7 +24,6 @@ const EventDetails = () => {
         }
     };
 
-    // Συνάρτηση για ανανέωση μόνο των στατιστικών μετά από υποβολή κριτικής
     const refreshStats = () => {
         axios.get(`/api/events/${id}/stats`)
             .then(res => setStats(res.data))
@@ -42,14 +39,27 @@ const EventDetails = () => {
 
     return (
         <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px' }}>
-            {/* Back Link */}
             <Link to="/" style={{ color: '#3498db', textDecoration: 'none', fontWeight: 'bold', display: 'inline-block', marginBottom: '20px' }}>
                 ← Επιστροφή στην Αρχική
             </Link>
 
+            {/* Μεγάλη Εικόνα Banner */}
+            <div style={{ width: '100%', marginBottom: '30px' }}>
+                <img
+                    src={event.imageUrl ? `http://localhost:8080/uploads/${event.imageUrl}` : 'https://via.placeholder.com/1100x450?text=EventHub'}
+                    alt={event.title}
+                    style={{
+                        width: '100%',
+                        maxHeight: '450px',
+                        objectFit: 'cover',
+                        borderRadius: '20px',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                    }}
+                />
+            </div>
+
             <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap' }}>
 
-                {/* Αριστερή Στήλη: Κύριες Πληροφορίες */}
                 <div style={{ flex: '2', minWidth: '350px' }}>
                     <h1 style={{ fontSize: '2.8rem', color: '#2c3e50', margin: '0 0 10px 0' }}>{event.title}</h1>
                     <div style={{ fontSize: '1.2rem', color: '#7f8c8d', marginBottom: '20px' }}>
@@ -64,11 +74,9 @@ const EventDetails = () => {
                         </p>
                     </div>
 
-                    {/* Φόρμα Αξιολόγησης */}
                     <ReviewForm eventId={id} onReviewSubmitted={refreshStats} />
                 </div>
 
-                {/* Δεξιά Στήλη: Statistics Card & Actions */}
                 <div style={{ flex: '1', minWidth: '300px' }}>
                     <div style={{ background: '#2c3e50', color: 'white', padding: '30px', borderRadius: '20px', textAlign: 'center', position: 'sticky', top: '20px' }}>
                         <h3 style={{ marginTop: 0 }}>Βαθμολογία Κοινού</h3>
@@ -86,7 +94,7 @@ const EventDetails = () => {
                                 </div>
                             </>
                         ) : (
-                            <p style={{ color: '#bdc3c7' }}>Δεν υπάρχουν ακόμη κριτικές. Γίνετε ο πρώτος!</p>
+                            <p style={{ color: '#bdc3c7' }}>Δεν υπάρχουν ακόμη κριτικές.</p>
                         )}
 
                         <button style={{
@@ -99,14 +107,12 @@ const EventDetails = () => {
                             borderRadius: '10px',
                             fontSize: '1.1rem',
                             fontWeight: 'bold',
-                            cursor: 'pointer',
-                            transition: '0.3s'
+                            cursor: 'pointer'
                         }}>
                             Join This Event
                         </button>
                     </div>
                 </div>
-
             </div>
         </div>
     );

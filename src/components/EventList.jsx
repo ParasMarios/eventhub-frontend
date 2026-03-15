@@ -8,21 +8,18 @@ const EventList = () => {
 
     const handleSearch = (e) => {
         if (e) e.preventDefault();
-
         axios.get(`/api/events/filter?location=${locationSearch}`)
             .then(res => setEvents(res.data))
             .catch(err => console.error("Σφάλμα στην αναζήτηση:", err));
     };
 
     useEffect(() => {
-        // Αρχικό φόρτωμα όλων των events
         axios.get('/api/events')
             .then(res => setEvents(res.data));
     }, []);
 
     return (
         <div>
-            {/* Χρησιμοποιούμε form για να λειτουργεί το Enter αυτόματα */}
             <form
                 onSubmit={handleSearch}
                 style={{ marginBottom: '30px', display: 'flex', gap: '10px' }}
@@ -50,13 +47,20 @@ const EventList = () => {
                         border: 'none',
                         borderRadius: '8px',
                         cursor: 'pointer',
-                        fontWeight: 'bold',
-                        transition: '0.2s'
+                        fontWeight: 'bold'
                     }}
-                    onMouseOver={(e) => e.target.style.background = '#2980b9'}
-                    onMouseOut={(e) => e.target.style.background = '#3498db'}
                 >
                     Αναζήτηση
+                </button>
+                <button
+                    type="button"
+                    onClick={() => {
+                        setLocationSearch('');
+                        axios.get('/api/events').then(res => setEvents(res.data));
+                    }}
+                    style={{ background: 'none', border: 'none', color: '#7f8c8d', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                    Καθαρισμός
                 </button>
             </form>
 
@@ -70,6 +74,13 @@ const EventList = () => {
                             boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
                             border: '1px solid #eee'
                         }}>
+                            {/* Εμφάνιση Εικόνας στην Κάρτα */}
+                            <img
+                                src={event.imageUrl ? `http://localhost:8080/uploads/${event.imageUrl}` : 'https://via.placeholder.com/300x180?text=No+Image'}
+                                alt={event.title}
+                                style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '10px', marginBottom: '15px' }}
+                            />
+
                             <h3 style={{ marginTop: 0, color: '#2c3e50' }}>{event.title}</h3>
                             <p style={{ color: '#7f8c8d' }}>📍 {event.location}</p>
                             <Link to={`/event/${event.id}`} style={{
@@ -83,7 +94,7 @@ const EventList = () => {
                         </div>
                     ))
                 ) : (
-                    <p style={{ color: '#7f8c8d' }}>Δεν βρέθηκαν εκδηλώσεις για αυτή την τοποθεσία.</p>
+                    <p style={{ color: '#7f8c8d' }}>Δεν βρέθηκαν εκδηλώσεις.</p>
                 )}
             </div>
         </div>
