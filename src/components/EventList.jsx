@@ -52,16 +52,6 @@ const EventList = () => {
                 >
                     Αναζήτηση
                 </button>
-                <button
-                    type="button"
-                    onClick={() => {
-                        setLocationSearch('');
-                        axios.get('/api/events').then(res => setEvents(res.data));
-                    }}
-                    style={{ background: 'none', border: 'none', color: '#7f8c8d', cursor: 'pointer', textDecoration: 'underline' }}
-                >
-                    Καθαρισμός
-                </button>
             </form>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '25px' }}>
