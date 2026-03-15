@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {Link, useParams} from 'react-router-dom';
 import axios from 'axios';
+import ReviewForm from './ReviewForm';
 
 const EventDetails = () => {
     const { id } = useParams();
@@ -8,55 +9,104 @@ const EventDetails = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    // Συνάρτηση για τη λήψη των δεδομένων
+    const fetchData = async () => {
+        try {
+            // Φέρνουμε το event και τα στατιστικά ταυτόχρονα
+            const [eventRes, statsRes] = await Promise.all([
+                axios.get(`/api/events/${id}`),
+                axios.get(`/api/events/${id}/stats`)
+            ]);
+            setEvent(eventRes.data);
+            setStats(statsRes.data);
+        } catch (err) {
+            console.error("Σφάλμα κατά τη φόρτωση των δεδομένων:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Συνάρτηση για ανανέωση μόνο των στατιστικών μετά από υποβολή κριτικής
+    const refreshStats = () => {
+        axios.get(`/api/events/${id}/stats`)
+            .then(res => setStats(res.data))
+            .catch(err => console.error("Σφάλμα κατά την ανανέωση των στατιστικών:", err));
+    };
+
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [eventRes, statsRes] = await Promise.all([
-                    axios.get(`/api/events/${id}`),
-                    axios.get(`/api/events/${id}/stats`)
-                ]);
-                setEvent(eventRes.data);
-                setStats(statsRes.data);
-            } catch (err) {
-                console.error("Σφάλμα:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchData();
     }, [id]);
 
-    if (loading) return <div>Φόρτωση...</div>;
-    if (!event) return <div>Το event δεν βρέθηκε.</div>;
+    if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>Φόρτωση εκδήλωσης...</div>;
+    if (!event) return <div style={{ padding: '40px', textAlign: 'center' }}>Η εκδήλωση δεν βρέθηκε.</div>;
 
     return (
-        <div style={{ background: 'white', padding: '40px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}>
-            <Link to="/" style={{ color: '#3498db', textDecoration: 'none' }}>← Πίσω στην Αρχική</Link>
-            <div style={{ display: 'flex', gap: '50px', marginTop: '30px', flexWrap: 'wrap' }}>
-                <div style={{ flex: '2' }}>
-                    <h1 style={{ fontSize: '2.8rem', color: '#2c3e50', margin: '0 0 20px 0' }}>{event.title}</h1>
-                    <p style={{ fontSize: '1.2rem', color: '#e67e22', fontWeight: 'bold' }}>📍 {event.location}</p>
-                    <p style={{ fontSize: '1.1rem' }}>📅 {new Date(event.dateTime).toLocaleString('el-GR')}</p>
-                    <hr style={{ margin: '30px 0', border: '0', borderTop: '1px solid #eee' }} />
-                    <h3>Πληροφορίες Εκδήλωσης</h3>
-                    <p style={{ lineHeight: '1.8', color: '#444', fontSize: '1.1rem' }}>{event.description}</p>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '20px' }}>
+            {/* Back Link */}
+            <Link to="/" style={{ color: '#3498db', textDecoration: 'none', fontWeight: 'bold', display: 'inline-block', marginBottom: '20px' }}>
+                ← Επιστροφή στην Αρχική
+            </Link>
+
+            <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap' }}>
+
+                {/* Αριστερή Στήλη: Κύριες Πληροφορίες */}
+                <div style={{ flex: '2', minWidth: '350px' }}>
+                    <h1 style={{ fontSize: '2.8rem', color: '#2c3e50', margin: '0 0 10px 0' }}>{event.title}</h1>
+                    <div style={{ fontSize: '1.2rem', color: '#7f8c8d', marginBottom: '20px' }}>
+                        <span style={{ marginRight: '20px' }}>📍 {event.location}</span>
+                        <span>📅 {new Date(event.dateTime).toLocaleString('el-GR')}</span>
+                    </div>
+
+                    <div style={{ background: '#fff', padding: '25px', borderRadius: '15px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                        <h3 style={{ borderBottom: '2px solid #3498db', display: 'inline-block', paddingBottom: '5px' }}>Περιγραφή</h3>
+                        <p style={{ lineHeight: '1.8', color: '#444', fontSize: '1.1rem', whiteSpace: 'pre-line' }}>
+                            {event.description}
+                        </p>
+                    </div>
+
+                    {/* Φόρμα Αξιολόγησης */}
+                    <ReviewForm eventId={id} onReviewSubmitted={refreshStats} />
                 </div>
-                <div style={{ flex: '1', background: '#f8f9fa', padding: '30px', borderRadius: '15px', height: 'fit-content' }}>
-                    <h3 style={{ marginTop: 0 }}>Στατιστικά Αξιολόγησης</h3>
-                    {stats ? (
-                        <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '3.5rem', color: '#f1c40f', fontWeight: 'bold' }}>{stats.averageOverall.toFixed(1)}</div>
-                            <p style={{ color: '#7f8c8d' }}>από {stats.totalReviews} κριτικές</p>
-                            <div style={{ textAlign: 'left', marginTop: '20px' }}>
-                                <p>🏗️ Οργάνωση: {stats.averageOrganization.toFixed(1)}/5</p>
-                                <p>📖 Περιεχόμενο: {stats.averageContent.toFixed(1)}/5</p>
-                            </div>
-                        </div>
-                    ) : <p>Δεν υπάρχουν ακόμα κριτικές.</p>}
-                    <button style={{ width: '100%', marginTop: '25px', padding: '15px', background: '#27ae60', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1.1rem', fontWeight: 'bold' }}>
-                        Join Event
-                    </button>
+
+                {/* Δεξιά Στήλη: Statistics Card & Actions */}
+                <div style={{ flex: '1', minWidth: '300px' }}>
+                    <div style={{ background: '#2c3e50', color: 'white', padding: '30px', borderRadius: '20px', textAlign: 'center', position: 'sticky', top: '20px' }}>
+                        <h3 style={{ marginTop: 0 }}>Βαθμολογία Κοινού</h3>
+
+                        {stats && stats.totalReviews > 0 ? (
+                            <>
+                                <div style={{ fontSize: '4rem', color: '#f1c40f', fontWeight: 'bold', lineHeight: '1' }}>
+                                    {stats.averageOverall.toFixed(1)}
+                                </div>
+                                <p style={{ color: '#bdc3c7', marginBottom: '20px' }}>από {stats.totalReviews} αξιολογήσεις</p>
+
+                                <div style={{ textAlign: 'left', fontSize: '0.9rem', borderTop: '1px solid #3e4f5f', paddingTop: '15px' }}>
+                                    <p>🏗️ Οργάνωση: <strong>{stats.averageOrganization.toFixed(1)} / 5</strong></p>
+                                    <p>📖 Περιεχόμενο: <strong>{stats.averageContent.toFixed(1)} / 5</strong></p>
+                                </div>
+                            </>
+                        ) : (
+                            <p style={{ color: '#bdc3c7' }}>Δεν υπάρχουν ακόμη κριτικές. Γίνετε ο πρώτος!</p>
+                        )}
+
+                        <button style={{
+                            width: '100%',
+                            marginTop: '25px',
+                            padding: '15px',
+                            background: '#27ae60',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '10px',
+                            fontSize: '1.1rem',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            transition: '0.3s'
+                        }}>
+                            Join This Event
+                        </button>
+                    </div>
                 </div>
+
             </div>
         </div>
     );

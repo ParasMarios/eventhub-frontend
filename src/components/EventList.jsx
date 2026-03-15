@@ -4,32 +4,86 @@ import { Link } from 'react-router-dom';
 
 const EventList = () => {
     const [events, setEvents] = useState([]);
+    const [locationSearch, setLocationSearch] = useState('');
+
+    const handleSearch = (e) => {
+        if (e) e.preventDefault();
+
+        axios.get(`/api/events/filter?location=${locationSearch}`)
+            .then(res => setEvents(res.data))
+            .catch(err => console.error("Σφάλμα στην αναζήτηση:", err));
+    };
 
     useEffect(() => {
+        // Αρχικό φόρτωμα όλων των events
         axios.get('/api/events')
-            .then(res => setEvents(res.data))
-            .catch(err => console.error("Σφάλμα κατά τη λήψη των events:", err));
+            .then(res => setEvents(res.data));
     }, []);
 
     return (
         <div>
-            <h2 style={{ color: '#2c3e50', marginBottom: '30px', borderBottom: '2px solid #3498db', display: 'inline-block', paddingBottom: '5px' }}>
-                Ανακαλύψτε Εκδηλώσεις
-            </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '30px' }}>
-                {events.length === 0 ? (
-                    <p>Δεν υπάρχουν διαθέσιμες εκδηλώσεις αυτή τη στιγμή.</p>
-                ) : (
+            {/* Χρησιμοποιούμε form για να λειτουργεί το Enter αυτόματα */}
+            <form
+                onSubmit={handleSearch}
+                style={{ marginBottom: '30px', display: 'flex', gap: '10px' }}
+            >
+                <input
+                    type="text"
+                    placeholder="Αναζήτηση ανά τοποθεσία (π.χ. Loutraki)..."
+                    value={locationSearch}
+                    onChange={(e) => setLocationSearch(e.target.value)}
+                    style={{
+                        padding: '12px',
+                        width: '350px',
+                        borderRadius: '8px',
+                        border: '1px solid #ddd',
+                        outline: 'none',
+                        fontSize: '1rem'
+                    }}
+                />
+                <button
+                    type="submit"
+                    style={{
+                        padding: '12px 25px',
+                        background: '#3498db',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        transition: '0.2s'
+                    }}
+                    onMouseOver={(e) => e.target.style.background = '#2980b9'}
+                    onMouseOut={(e) => e.target.style.background = '#3498db'}
+                >
+                    Αναζήτηση
+                </button>
+            </form>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '25px' }}>
+                {events.length > 0 ? (
                     events.map(event => (
-                        <div key={event.id} style={{ background: 'white', border: '1px solid #eee', borderRadius: '15px', padding: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', transition: 'transform 0.2s' }}>
-                            <h3 style={{ margin: '0 0 10px 0', color: '#2c3e50' }}>{event.title}</h3>
-                            <p style={{ color: '#7f8c8d', marginBottom: '5px' }}>📍 {event.location}</p>
-                            <p style={{ color: '#34495e', fontWeight: '500' }}>📅 {new Date(event.dateTime).toLocaleDateString('el-GR')}</p>
-                            <Link to={`/event/${event.id}`} style={{ display: 'inline-block', marginTop: '15px', color: '#3498db', textDecoration: 'none', fontWeight: 'bold' }}>
-                                Περισσότερα →
+                        <div key={event.id} style={{
+                            background: 'white',
+                            padding: '20px',
+                            borderRadius: '15px',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+                            border: '1px solid #eee'
+                        }}>
+                            <h3 style={{ marginTop: 0, color: '#2c3e50' }}>{event.title}</h3>
+                            <p style={{ color: '#7f8c8d' }}>📍 {event.location}</p>
+                            <Link to={`/event/${event.id}`} style={{
+                                color: '#3498db',
+                                fontWeight: 'bold',
+                                textDecoration: 'none',
+                                fontSize: '0.9rem'
+                            }}>
+                                Λεπτομέρειες →
                             </Link>
                         </div>
                     ))
+                ) : (
+                    <p style={{ color: '#7f8c8d' }}>Δεν βρέθηκαν εκδηλώσεις για αυτή την τοποθεσία.</p>
                 )}
             </div>
         </div>
