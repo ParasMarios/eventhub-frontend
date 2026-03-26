@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, {useContext, useState} from 'react';
 import axios from 'axios';
+import {AuthContext} from "../context/AuthContext.jsx";
+
 
 const ReviewForm = ({ eventId, onReviewSubmitted }) => {
     const [formData, setFormData] = useState({
@@ -10,14 +12,18 @@ const ReviewForm = ({ eventId, onReviewSubmitted }) => {
         comment: ''
     });
 
+    const { user } = useContext(AuthContext);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!user) return alert("Πρέπει να συνδεθείτε για να κάνετε κριτική");
+
         try {
-            // Στέλνουμε το review συνδέοντάς το με το event και τον χρήστη (id: 1 προσωρινά)
+            // Στέλνουμε το review συνδέοντάς το με το event και τον χρήστη
             await axios.post('/api/reviews', {
                 ...formData,
-                event: { id: eventId },
-                author: { id: 1 }
+                event: { id: parseInt(eventId) },
+                author: { id: parseInt(user.userId) }
             });
             alert("Η αξιολόγησή σας υποβλήθηκε!");
             setFormData({ ...formData, comment: '' }); // Καθαρισμός σχολίου

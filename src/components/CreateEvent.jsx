@@ -1,52 +1,59 @@
-import React, { useState } from 'react';
+import React, {useContext, useState} from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 const CreateEvent = () => {
+    const { user } = useContext(AuthContext);
     const [formData, setFormData] = useState({ title: '', description: '', location: '', dateTime: '' });
-    const [file, setFile] = useState(null); // Νέο state για το αρχείο
+    const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Έλεγχος αν έχει επιλεγεί αρχείο
-        if (!file) {
-            alert("Παρακαλώ επιλέξτε μια φωτογραφία!");
+        if (!user || !user.userId) {
+            alert("Σφάλμα: Δεν βρέθηκε ID χρήστη. Παρακαλώ συνδεθείτε ξανά.");
             return;
         }
 
         setLoading(true);
-
-        // Δημιουργία FormData για την αποστολή multipart/form-data
         const data = new FormData();
 
-        // Το αντικείμενο του event (DTO)
+        // Βεβαιωνόμαστε ότι το id μπαίνει σωστά μέσα στο organizer
         const eventDto = {
-            ...formData,
-            organizer: { id: 1 } // Hardcoded για τώρα
+            title: formData.title,
+            description: formData.description,
+            location: formData.location,
+            dateTime: formData.dateTime,
+            organizer: { id: parseInt(user.userId) } // Μετατροπή σε αριθμό για σιγουριά
         };
 
-        // Προσθήκη των δεδομένων στο FormData
         data.append('event', JSON.stringify(eventDto));
         data.append('file', file);
 
         try {
-            await axios.post('/api/events', data, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-            alert("Επιτυχής δημιουργία εκδήλωσης με φωτογραφία!");
+            await axios.post('/api/events', data);
+            alert("Επιτυχής δημιουργία!");
             navigate('/');
         } catch (err) {
-            console.error("Σφάλμα κατά τη δημιουργία:", err);
-            alert("Κάτι πήγε στραβά. Ελέγξτε αν το Backend τρέχει σωστά.");
+            console.error("Error details:", err.response?.data);
+            alert("Σφάλμα κατά τη δημιουργία.");
         } finally {
             setLoading(false);
         }
     };
+
+    if (!user) {
+        return (
+            <div style={{ textAlign: 'center', marginTop: '50px' }}>
+                <h2>Πρόσβαση Μόνο για Μέλη</h2>
+                <p>Παρακαλώ συνδεθείτε για να δημιουργήσετε μια νέα εκδήλωση.</p>
+                <button onClick={() => navigate('/login')} style={{ padding: '10px 20px', cursor: 'pointer' }}>Προς τη Σύνδεση</button>
+            </div>
+        );
+    }
 
     return (
         <div style={{ maxWidth: '600px', margin: '0 auto', background: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 5px 20px rgba(0,0,0,0.05)' }}>
