@@ -8,6 +8,7 @@ import Login from './components/Login';
 import axios from "axios";
 import {useContext} from "react";
 import Register from "./components/Register.jsx";
+import Profile from "./components/Profile.jsx";
 
 axios.interceptors.request.use(config => {
     const savedUser = localStorage.getItem('eventHubUser');
@@ -37,6 +38,10 @@ const Navigation = () => {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                 <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>Αρχική</Link>
+
+                {user && (
+                    <Link to="/profile" style={{ color: 'white', textDecoration: 'none', marginRight: '15px' }}>Το Προφίλ μου</Link>
+                )}
 
                 {user ? (
                     <>
@@ -98,6 +103,7 @@ function App() {
                             <Route path="/" element={<EventList />} />
                             <Route path="/register" element={<Register />} />
                             <Route path="/login" element={<Login />} />
+                            <Route path="/profile" element={<Profile />} />
                             <Route path="/create" element={<CreateEvent />} />
                             <Route path="/event/:id" element={<EventDetails />} />
                         </Routes>
