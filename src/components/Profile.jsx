@@ -72,7 +72,6 @@ const Profile = () => {
             {/* Κάρτα Χρήστη */}
             <div style={{ background: 'white', padding: '25px', borderRadius: '15px', marginBottom: '40px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
                 <h2 style={{ margin: 0, color: '#2c3e50' }}>👤 Το Προφίλ μου</h2>
-                <p style={{ color: '#7f8c8d', marginTop: '10px', fontSize: '1.1rem' }}>Username: <strong>{user.username}</strong></p>
             </div>
 
             {/* ΕΝΟΤΗΤΑ 1: ΟΙ ΕΚΔΗΛΩΣΕΙΣ ΜΟΥ */}
