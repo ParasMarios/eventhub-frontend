@@ -38,7 +38,7 @@ const EventDetails = () => {
     const handleJoin = async () => {
         setJoining(true);
         try {
-            await axios.post(`/api/events/${eventId}/join`);
+            await axios.post(`/api/events/${id}/join`);
             alert("Η συμμετοχή σας κατοχυρώθηκε!");
             fetchData();
         } catch (err) {
@@ -98,6 +98,40 @@ const EventDetails = () => {
                     <p style={{ lineHeight: '1.6', fontSize: '1.1rem' }}>{event.description}</p>
                 </div>
             </div>
+
+            {user && event.organizer && user.userId === event.organizer.id && (
+                <div style={{
+                    marginTop: '30px',
+                    padding: '20px',
+                    background: '#f0f7ff',
+                    borderRadius: '12px',
+                    border: '1px solid #d0e3ff'
+                }}>
+                    <h3 style={{ color: '#2c3e50', marginTop: 0 }}>
+                        👥 Λίστα Συμμετεχόντων ({event.participants?.length || 0})
+                    </h3>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
+                        {event.participants && event.participants.length > 0 ? (
+                            event.participants.map(participant => (
+                                <span key={participant.id} style={{
+                                    background: 'white',
+                                    padding: '5px 15px',
+                                    borderRadius: '20px',
+                                    fontSize: '0.9rem',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                                    border: '1px solid #eee'
+                                }}>
+                        @{participant.username}
+                    </span>
+                            ))
+                        ) : (
+                            <p style={{ color: '#7f8c8d', fontStyle: 'italic', margin: 0 }}>
+                                Δεν υπάρχουν ακόμα συμμετοχές.
+                            </p>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Ενότητα Κριτικών */}
             <div style={{ marginTop: '40px' }}>
