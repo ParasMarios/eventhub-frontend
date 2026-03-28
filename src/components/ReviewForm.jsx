@@ -6,9 +6,6 @@ import {AuthContext} from "../context/AuthContext.jsx";
 const ReviewForm = ({ eventId, onReviewSubmitted }) => {
     const [formData, setFormData] = useState({
         overallRating: 5,
-        organizationRating: 5,
-        contentRating: 5,
-        venueRating: 5,
         comment: ''
     });
 
@@ -53,7 +50,6 @@ const ReviewForm = ({ eventId, onReviewSubmitted }) => {
             <h3>Αφήστε μια Αξιολόγηση</h3>
             <form onSubmit={handleSubmit}>
                 {renderStars("Συνολικά", "overallRating")}
-                {renderStars("Οργάνωση", "organizationRating")}
 
                 <textarea
                     placeholder="Γράψτε το σχόλιό σας εδώ..."

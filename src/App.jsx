@@ -1,5 +1,5 @@
 
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route, Link, useNavigate} from 'react-router-dom';
 import EventList from './components/EventList';
 import CreateEvent from './components/CreateEvent';
 import EventDetails from './components/EventDetails';
@@ -9,6 +9,7 @@ import axios from "axios";
 import {useContext} from "react";
 import Register from "./components/Register.jsx";
 import Profile from "./components/Profile.jsx";
+import EditEvent from './components/EditEvent';
 
 axios.interceptors.request.use(config => {
     const savedUser = localStorage.getItem('eventHubUser');
@@ -21,6 +22,23 @@ axios.interceptors.request.use(config => {
 
 const Navigation = () => {
     const { user, logout } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    const sharedButtonStyle = {
+        padding: '10px 20px',
+        borderRadius: '8px',
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: '0.95rem',
+        border: 'none',
+        cursor: 'pointer',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '42px',      // Σταθερό ύψος
+        minWidth: '120px',   // Σταθερό ελάχιστο πλάτος
+        transition: 'opacity 0.2s'
+    };
 
     return (
         <nav style={{
@@ -37,53 +55,50 @@ const Navigation = () => {
             </h1>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>Αρχική</Link>
-
-                {user && (
-                    <Link to="/profile" style={{ color: 'white', textDecoration: 'none', marginRight: '15px' }}>Το Προφίλ μου</Link>
-                )}
 
                 {user ? (
                     <>
-                        <Link to="/create" style={{
-                            background: '#3498db',
-                            padding: '8px 15px',
-                            borderRadius: '5px',
+                        <Link to="/profile" style={{
                             color: 'white',
                             textDecoration: 'none',
-                            fontWeight: 'bold'
-                        }}>+ Δημιουργία</Link>
-
-                        <span style={{ color: '#bdc3c7', marginLeft: '10px' }}>
+                            fontWeight: 'bold',
+                            marginLeft: '10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                        }}>
                             👤 {user.username}
-                        </span>
+                        </Link>
+
+                        <button
+                            onClick={() => navigate('/create')}
+                            style={{ ...sharedButtonStyle, background: '#3498db' }}
+                        >
+                            Create Event
+                        </button>
 
                         <button
                             onClick={logout}
-                            style={{
-                                background: '#e74c3c',
-                                color: 'white',
-                                border: 'none',
-                                padding: '8px 15px',
-                                borderRadius: '5px',
-                                cursor: 'pointer',
-                                fontWeight: 'bold'
-                            }}
+                            style={{ ...sharedButtonStyle, background: '#e74c3c' }}
                         >
                             Logout
                         </button>
                     </>
                 ) : (
                     <>
-                        <Link to="/register" style={{ color: 'white', textDecoration: 'none' }}>Εγγραφή</Link>
-                        <Link to="/login" style={{
-                            background: '#27ae60',
-                            padding: '8px 15px',
-                            borderRadius: '5px',
-                            color: 'white',
-                            textDecoration: 'none',
-                            fontWeight: 'bold'
-                        }}>Login</Link>
+                        <button
+                            onClick={() => navigate('/register')}
+                            style={{ ...sharedButtonStyle, background: '#7f8c8d' }}
+                        >
+                            Register
+                        </button>
+
+                        <button
+                            onClick={() => navigate('/login')}
+                            style={{ ...sharedButtonStyle, background: '#27ae60' }}
+                        >
+                            Login
+                        </button>
                     </>
                 )}
             </div>
@@ -105,6 +120,7 @@ function App() {
                             <Route path="/login" element={<Login />} />
                             <Route path="/profile" element={<Profile />} />
                             <Route path="/create" element={<CreateEvent />} />
+                            <Route path="/edit-event/:id" element={<EditEvent />} />
                             <Route path="/event/:id" element={<EventDetails />} />
                         </Routes>
                     </main>

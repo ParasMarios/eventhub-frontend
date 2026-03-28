@@ -80,6 +80,18 @@ const Profile = () => {
                                     Προβολή
                                 </Link>
 
+                                <Link to={`/edit-event/${event.id}`} style={{
+                                    color: '#f39c12',
+                                    textDecoration: 'none',
+                                    border: '1px solid #f39c12',
+                                    padding: '5px 10px',
+                                    borderRadius: '5px',
+                                    fontSize: '0.9rem',
+                                    fontWeight: 'bold'
+                                }}>
+                                    Επεξεργασία
+                                </Link>
+
                                 {/* Νέο Κουμπί Διαγραφής */}
                                 <button
                                     onClick={() => handleDelete(event.id, event.title)}
