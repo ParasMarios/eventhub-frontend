@@ -11,6 +11,7 @@ const EventDetails = () => {
     const [reviews, setReviews] = useState([]);
     const [stats, setStats] = useState({ averageOverall: 0, totalReviews: 0 });
     const [loading, setLoading] = useState(true);
+    const [joining, setJoining] = useState(false);
 
     const fetchData = async () => {
         try {
@@ -34,12 +35,25 @@ const EventDetails = () => {
         fetchData();
     }, [id]);
 
+    const handleJoin = async () => {
+        setJoining(true);
+        try {
+            await axios.post(`/api/events/${eventId}/join`);
+            alert("Η συμμετοχή σας κατοχυρώθηκε!");
+            fetchData();
+        } catch (err) {
+            console.error(err);
+            alert("Αποτυχία συμμετοχής. Ίσως είστε ήδη μέλος;");
+        } finally {
+            setJoining(false);
+        }
+    };
+
     if (loading) return <div style={{ textAlign: 'center', padding: '50px' }}>Φόρτωση...</div>;
     if (!event) return <div style={{ textAlign: 'center', padding: '50px' }}>Το event δεν βρέθηκε.</div>;
 
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
-            {/* Header Εκδήλωσης */}
             <div style={{ background: 'white', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
                 <img
                     src={event.imageUrl ? `http://localhost:8080/uploads/${event.imageUrl}` : 'https://via.placeholder.com/800x400'}
@@ -59,7 +73,28 @@ const EventDetails = () => {
                         </div>
                     </div>
                     <p style={{ color: '#7f8c8d' }}>📍 {event.location} | 📅 {new Date(event.dateTime).toLocaleString('el-GR')}</p>
-                    <hr />
+
+                    {user && (
+                        <button
+                            onClick={handleJoin}
+                            disabled={joining}
+                            style={{
+                                background: '#27ae60',
+                                color: 'white',
+                                border: 'none',
+                                padding: '12px 25px',
+                                borderRadius: '8px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                marginTop: '10px',
+                                transition: '0.3s'
+                            }}
+                        >
+                            {joining ? "Παρακαλώ περιμένετε..." : "➕ Join Event"}
+                        </button>
+                    )}
+
+                    <hr style={{ margin: '20px 0' }} />
                     <p style={{ lineHeight: '1.6', fontSize: '1.1rem' }}>{event.description}</p>
                 </div>
             </div>
@@ -70,7 +105,6 @@ const EventDetails = () => {
                     Κριτικές Χρηστών
                 </h3>
 
-                {/* Λίστα Κριτικών */}
                 <div style={{ marginBottom: '40px' }}>
                     {reviews.length > 0 ? (
                         reviews.map(review => (
@@ -85,11 +119,10 @@ const EventDetails = () => {
                             </div>
                         ))
                     ) : (
-                        <p style={{ color: '#7f8c8d', fontStyle: 'italic' }}>Δεν υπάρχουν ακόμα κριτικές. Γίνετε ο πρώτος!</p>
+                        <p style={{ color: '#7f8c8d', fontStyle: 'italic' }}>Δεν υπάρχουν ακόμα κριτικές.</p>
                     )}
                 </div>
 
-                {/* Φόρμα Νέας Κριτικής */}
                 {user ? (
                     <div>
                         <ReviewForm eventId={id} onReviewSubmitted={fetchData} />
