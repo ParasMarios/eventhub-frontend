@@ -91,7 +91,7 @@ const EventDetails = () => {
 
                 {/* Φόρμα Νέας Κριτικής */}
                 {user ? (
-                    <div style={{ background: '#eef2f3', padding: '30px', borderRadius: '15px' }}>
+                    <div>
                         <ReviewForm eventId={id} onReviewSubmitted={fetchData} />
                     </div>
                 ) : (

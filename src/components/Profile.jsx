@@ -1,12 +1,30 @@
 import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 const Profile = () => {
     const { user } = useContext(AuthContext);
     const [myEvents, setMyEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+
+    const iconButtonStyle = {
+        padding: '8px 12px',
+        borderRadius: '8px',
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: '1.2rem',
+        border: 'none',
+        cursor: 'pointer',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '42px',
+        minWidth: '42px',
+        transition: 'background 0.2s',
+        marginRight: '5px'
+    };
 
     const fetchMyEvents = () => {
         if (user) {
@@ -68,45 +86,28 @@ const Profile = () => {
 
                             {/* Κουμπιά Ενεργειών - Διατήρηση του Style */}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
-                                <Link to={`/event/${event.id}`} style={{
-                                    color: '#3498db',
-                                    textDecoration: 'none',
-                                    fontSize: '0.9rem',
-                                    fontWeight: 'bold',
-                                    border: '1px solid #3498db',
-                                    padding: '5px 10px',
-                                    borderRadius: '5px'
-                                }}>
-                                    Προβολή
-                                </Link>
+                                <button
+                                    onClick={() => navigate(`/event/${event.id}`)}
+                                    style={{ ...iconButtonStyle, background: '#27ae60' }}
+                                    title="Προβολή"
+                                >
+                                    👁️
+                                </button>
 
-                                <Link to={`/edit-event/${event.id}`} style={{
-                                    color: '#f39c12',
-                                    textDecoration: 'none',
-                                    border: '1px solid #f39c12',
-                                    padding: '5px 10px',
-                                    borderRadius: '5px',
-                                    fontSize: '0.9rem',
-                                    fontWeight: 'bold'
-                                }}>
-                                    Επεξεργασία
-                                </Link>
+                                <button
+                                    onClick={() => navigate(`/edit-event/${event.id}`)}
+                                    style={{ ...iconButtonStyle, background: '#f39c12' }}
+                                    title="Επεξεργασία"
+                                >
+                                    ✏️
+                                </button>
 
-                                {/* Νέο Κουμπί Διαγραφής */}
                                 <button
                                     onClick={() => handleDelete(event.id, event.title)}
-                                    style={{
-                                        color: '#e74c3c',
-                                        background: 'none',
-                                        border: '1px solid #e74c3c',
-                                        padding: '5px 10px',
-                                        borderRadius: '5px',
-                                        fontSize: '0.9rem',
-                                        fontWeight: 'bold',
-                                        cursor: 'pointer'
-                                    }}
+                                    style={{ ...iconButtonStyle, background: '#e74c3c' }}
+                                    title="Διαγραφή"
                                 >
-                                    Διαγραφή
+                                    🗑️
                                 </button>
                             </div>
                         </div>
