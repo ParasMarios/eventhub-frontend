@@ -5,8 +5,23 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    host: true, // Επιτρέπει την πρόσβαση από το Docker
+    port: 5173,
+    allowedHosts: [
+      '.ngrok-free.dev',
+      '.ngrok-free.app'
+    ],
     proxy: {
-      '/api': 'http://localhost:8080'
+      '/api': {
+        target: 'http://backend:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/uploads': {
+        target: 'http://backend:8080',
+        changeOrigin: true,
+        secure: false,
+      }
     }
   }
 })
