@@ -140,7 +140,7 @@ const EventList = () => {
                             flexDirection: 'column' // Για να σπρώξουμε το link στο τέλος
                         }}>
                             <img
-                                src={event.imageUrl ? `http://localhost:8080/uploads/${event.imageUrl}` : 'https://via.placeholder.com/300x180?text=No+Image'}
+                                src={event.imageUrl ? `https://eventhub-backend-c1ow.onrender.com/uploads/${event.imageUrl}` : 'https://via.placeholder.com/300x180?text=No+Image'}
                                 alt={event.title}
                                 style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '10px', marginBottom: '15px' }}
                             />

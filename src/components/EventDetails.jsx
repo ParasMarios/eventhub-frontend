@@ -101,7 +101,7 @@ const EventDetails = () => {
 
             <div style={{ background: 'white', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
                 <img
-                    src={event.imageUrl ? `http://localhost:8080/uploads/${event.imageUrl}` : 'https://via.placeholder.com/800x400'}
+                    src={event.imageUrl ? `https://eventhub-backend-c1ow.onrender.com/uploads/${event.imageUrl}` : 'https://via.placeholder.com/800x400'}
                     alt={event.title}
                     style={{ width: '100%', height: '400px', objectFit: 'cover' }}
                 />
@@ -189,7 +189,7 @@ const EventDetails = () => {
                                     {event.gallery.map(image => (
                                         <div key={image.id} className="gallery-item" style={{ position: 'relative' }}>
                                             <img
-                                                src={`http://localhost:8080/uploads/${image.imageUrl}`}
+                                                src={`https://eventhub-backend-c1ow.onrender.com/uploads/${image.imageUrl}`}
                                                 alt="Στιγμιότυπο"
                                                 style={{
                                                     width: '100%',

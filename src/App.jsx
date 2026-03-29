@@ -11,6 +11,8 @@ import Register from "./components/Register.jsx";
 import Profile from "./components/Profile.jsx";
 import EditEvent from './components/EditEvent';
 
+axios.defaults.baseURL = 'https://eventhub-backend-c1ow.onrender.com';
+
 axios.interceptors.request.use(config => {
     const savedUser = localStorage.getItem('eventHubUser');
     if (savedUser) {
