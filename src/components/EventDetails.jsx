@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import ReviewForm from './ReviewForm';
+import MediaUpload from './MediaUpload';
 
 const EventDetails = () => {
     const { id } = useParams();
@@ -12,6 +13,9 @@ const EventDetails = () => {
     const [stats, setStats] = useState({ averageOverall: 0, totalReviews: 0 });
     const [loading, setLoading] = useState(true);
     const [joining, setJoining] = useState(false);
+
+    // ΝΕΟ STATE ΓΙΑ ΤΗΝ GALLERY
+    const [showGallery, setShowGallery] = useState(false);
 
     const fetchData = async () => {
         try {
@@ -52,6 +56,13 @@ const EventDetails = () => {
     if (loading) return <div style={{ textAlign: 'center', padding: '50px' }}>Φόρτωση...</div>;
     if (!event) return <div style={{ textAlign: 'center', padding: '50px' }}>Το event δεν βρέθηκε.</div>;
 
+    // ΛΟΓΙΚΗ ΕΛΕΓΧΟΥ ΠΡΟΣΒΑΣΗΣ (ΠΟΙΟΣ ΒΛΕΠΕΙ ΤΗΝ GALLERY ΚΑΙ ΤΟ UPLOAD)
+    const isOrganizer = user && event.organizer && user.userId === event.organizer.id;
+    // Ελέγχουμε αν ο χρήστης υπάρχει στη λίστα των συμμετεχόντων (participants)
+    const isParticipant = user && event.participants && event.participants.some(p => p.id === user.userId);
+    const canInteractWithGallery = isOrganizer || isParticipant;
+
+
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
             <div style={{ background: 'white', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
@@ -74,7 +85,7 @@ const EventDetails = () => {
                     </div>
                     <p style={{ color: '#7f8c8d' }}>📍 {event.location} | 📅 {new Date(event.dateTime).toLocaleString('el-GR')}</p>
 
-                    {user && (
+                    {user && !isOrganizer && !isParticipant && (
                         <button
                             onClick={handleJoin}
                             disabled={joining}
@@ -94,12 +105,86 @@ const EventDetails = () => {
                         </button>
                     )}
 
+                    {/* Ένδειξη αν ο χρήστης συμμετέχει ήδη */}
+                    {isParticipant && (
+                        <span style={{
+                            display: 'inline-block',
+                            marginTop: '10px',
+                            padding: '8px 15px',
+                            background: '#d4edda',
+                            color: '#155724',
+                            borderRadius: '8px',
+                            fontWeight: 'bold'
+                        }}>
+                            ✅ Συμμετέχετε σε αυτή την εκδήλωση!
+                        </span>
+                    )}
+
                     <hr style={{ margin: '20px 0' }} />
                     <p style={{ lineHeight: '1.6', fontSize: '1.1rem' }}>{event.description}</p>
+
+                    {/* --- GALLERY SECTION (ΠΡΟΣΘΗΚΗ ΕΔΩ) --- */}
+                    {canInteractWithGallery && event.gallery && event.gallery.length > 0 && (
+                        <div style={{ marginTop: '40px', padding: '20px', background: '#f8f9fa', borderRadius: '15px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <h3 style={{ margin: 0, color: '#2c3e50' }}>📸 Υλικό Εκδήλωσης</h3>
+
+                                <button
+                                    onClick={() => setShowGallery(!showGallery)}
+                                    style={{
+                                        padding: '10px 20px',
+                                        background: showGallery ? '#e74c3c' : '#3498db',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        fontWeight: 'bold',
+                                        transition: 'background 0.3s'
+                                    }}
+                                >
+                                    {showGallery ? 'Απόκρυψη Υλικού' : `Προβολή Υλικού (${event.gallery.length} Φωτογραφίες)`}
+                                </button>
+                            </div>
+
+                            {showGallery && (
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                                    gap: '15px',
+                                    marginTop: '20px'
+                                }}>
+                                    {event.gallery.map(image => (
+                                        <div key={image.id} style={{ position: 'relative' }}>
+                                            <img
+                                                src={`http://localhost:8080/uploads/${image.imageUrl}`}
+                                                alt="Στιγμιότυπο"
+                                                style={{
+                                                    width: '100%',
+                                                    height: '200px',
+                                                    objectFit: 'cover',
+                                                    borderRadius: '10px',
+                                                    boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                                                    border: '2px solid white'
+                                                }}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Μήνυμα για όσους δεν έχουν πρόσβαση */}
+                    {!canInteractWithGallery && event.gallery && event.gallery.length > 0 && (
+                        <div style={{ marginTop: '30px', padding: '15px', background: '#fff3cd', color: '#856404', borderRadius: '8px', textAlign: 'center' }}>
+                            <p style={{ margin: 0 }}>🔒 Υπάρχουν {event.gallery.length} φωτογραφίες από αυτή την εκδήλωση. Κάντε "Join" για να τις δείτε!</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {user && event.organizer && user.userId === event.organizer.id && (
+            {/* ΠΡΟΒΟΛΗ ΣΥΜΜΕΤΕΧΟΝΤΩΝ ΓΙΑ ΤΟΝ ΔΙΟΡΓΑΝΩΤΗ */}
+            {isOrganizer && (
                 <div style={{
                     marginTop: '30px',
                     padding: '20px',
@@ -131,6 +216,17 @@ const EventDetails = () => {
                         )}
                     </div>
                 </div>
+            )}
+
+            {/* UPLOAD ΜΟΝΟ ΑΝ ΕΧΕΙ ΠΡΟΣΒΑΣΗ */}
+            {canInteractWithGallery && (
+                <MediaUpload
+                    eventId={event.id}
+                    onUploadSuccess={() => {
+                        console.log("Φωτογραφίες ανέβηκαν, ανανέωση δεδομένων...");
+                        fetchData(); // Καλούμε ξανά το API για να φέρει αμέσως τις νέες φωτογραφίες στο UI!
+                    }}
+                />
             )}
 
             {/* Ενότητα Κριτικών */}
