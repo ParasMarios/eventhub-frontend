@@ -14,7 +14,7 @@ const EventDetails = () => {
     const [loading, setLoading] = useState(true);
     const [joining, setJoining] = useState(false);
 
-    // ΝΕΟ STATE ΓΙΑ ΤΗΝ GALLERY
+    // STATE ΓΙΑ ΤΗΝ GALLERY
     const [showGallery, setShowGallery] = useState(false);
 
     const fetchData = async () => {
@@ -53,19 +53,52 @@ const EventDetails = () => {
         }
     };
 
+    // ΝΕΑ ΣΥΝΑΡΤΗΣΗ: Διαγραφή Φωτογραφίας Gallery
+    const handleDeleteImage = async (imageId, imageUrl) => {
+        if (!window.confirm("Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή τη φωτογραφία;")) {
+            return;
+        }
+
+        try {
+            await axios.delete(`/api/events/images/${imageId}`);
+            alert("Η φωτογραφία διαγράφηκε.");
+
+            // Ενημερώνουμε το state αμέσως για να εξαφανιστεί η φωτό χωρίς refresh
+            setEvent(prevEvent => ({
+                ...prevEvent,
+                gallery: prevEvent.gallery.filter(img => img.id !== imageId)
+            }));
+
+        } catch (error) {
+            console.error("Σφάλμα κατά τη διαγραφή φωτογραφίας:", error);
+            if (error.response && error.response.status === 403) {
+                alert("Δεν έχετε δικαίωμα να διαγράψετε αυτή τη φωτογραφία.");
+            } else {
+                alert("Υπήρξε πρόβλημα με τη διαγραφή.");
+            }
+        }
+    };
+
     if (loading) return <div style={{ textAlign: 'center', padding: '50px' }}>Φόρτωση...</div>;
     if (!event) return <div style={{ textAlign: 'center', padding: '50px' }}>Το event δεν βρέθηκε.</div>;
 
-    // ΛΟΓΙΚΗ ΕΛΕΓΧΟΥ ΠΡΟΣΒΑΣΗΣ (ΠΟΙΟΣ ΒΛΕΠΕΙ ΤΗΝ GALLERY ΚΑΙ ΤΟ UPLOAD)
+    // ΛΟΓΙΚΗ ΕΛΕΓΧΟΥ ΠΡΟΣΒΑΣΗΣ
     const isOrganizer = user && event.organizer && user.userId === event.organizer.id;
-    // Ελέγχουμε αν ο χρήστης υπάρχει στη λίστα των συμμετεχόντων (participants)
     const isParticipant = user && event.participants && event.participants.some(p => p.id === user.userId);
     const canInteractWithGallery = isOrganizer || isParticipant;
     const hasEventPassed = new Date(event.dateTime) < new Date();
 
-
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
+            {/* CSS για το hover effect του κουμπιού διαγραφής */}
+            <style>
+                {`
+                    .gallery-item:hover .delete-btn {
+                        opacity: 1 !important;
+                    }
+                `}
+            </style>
+
             <div style={{ background: 'white', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
                 <img
                     src={event.imageUrl ? `http://localhost:8080/uploads/${event.imageUrl}` : 'https://via.placeholder.com/800x400'}
@@ -106,7 +139,6 @@ const EventDetails = () => {
                         </button>
                     )}
 
-                    {/* Ένδειξη αν ο χρήστης συμμετέχει ήδη */}
                     {isParticipant && (
                         <span style={{
                             display: 'inline-block',
@@ -124,7 +156,7 @@ const EventDetails = () => {
                     <hr style={{ margin: '20px 0' }} />
                     <p style={{ lineHeight: '1.6', fontSize: '1.1rem' }}>{event.description}</p>
 
-                    {/* --- GALLERY SECTION (ΠΡΟΣΘΗΚΗ ΕΔΩ) --- */}
+                    {/* --- GALLERY SECTION --- */}
                     {canInteractWithGallery && event.gallery && event.gallery.length > 0 && (
                         <div style={{ marginTop: '40px', padding: '20px', background: '#f8f9fa', borderRadius: '15px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -155,7 +187,7 @@ const EventDetails = () => {
                                     marginTop: '20px'
                                 }}>
                                     {event.gallery.map(image => (
-                                        <div key={image.id} style={{ position: 'relative' }}>
+                                        <div key={image.id} className="gallery-item" style={{ position: 'relative' }}>
                                             <img
                                                 src={`http://localhost:8080/uploads/${image.imageUrl}`}
                                                 alt="Στιγμιότυπο"
@@ -165,9 +197,42 @@ const EventDetails = () => {
                                                     objectFit: 'cover',
                                                     borderRadius: '10px',
                                                     boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                                                    border: '2px solid white'
+                                                    border: '2px solid white',
+                                                    transition: 'transform 0.2s'
                                                 }}
+                                                onMouseOver={(e) => e.target.style.transform = 'scale(1.02)'}
+                                                onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
                                             />
+
+                                            {/* ΚΟΥΜΠΙ ΔΙΑΓΡΑΦΗΣ */}
+                                            {user && image.uploader && (user.userId === image.uploader.id || isOrganizer) && (
+                                                <button
+                                                    className="delete-btn"
+                                                    onClick={() => handleDeleteImage(image.id, image.imageUrl)}
+                                                    title="Διαγραφή φωτογραφίας"
+                                                    style={{
+                                                        position: 'absolute',
+                                                        top: '10px',
+                                                        right: '10px',
+                                                        background: 'rgba(231, 76, 60, 0.9)',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        borderRadius: '50%',
+                                                        width: '32px',
+                                                        height: '32px',
+                                                        cursor: 'pointer',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        fontSize: '1rem',
+                                                        boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+                                                        transition: 'opacity 0.2s',
+                                                        opacity: 0, // Ελέγχεται από το CSS παραπάνω
+                                                    }}
+                                                >
+                                                    🗑️
+                                                </button>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -175,7 +240,6 @@ const EventDetails = () => {
                         </div>
                     )}
 
-                    {/* Μήνυμα για όσους δεν έχουν πρόσβαση */}
                     {!canInteractWithGallery && event.gallery && event.gallery.length > 0 && (
                         <div style={{ marginTop: '30px', padding: '15px', background: '#fff3cd', color: '#856404', borderRadius: '8px', textAlign: 'center' }}>
                             <p style={{ margin: 0 }}>🔒 Υπάρχουν {event.gallery.length} φωτογραφίες από αυτή την εκδήλωση. Κάντε "Join" για να τις δείτε!</p>
