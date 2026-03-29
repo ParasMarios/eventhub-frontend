@@ -61,6 +61,7 @@ const EventDetails = () => {
     // Ελέγχουμε αν ο χρήστης υπάρχει στη λίστα των συμμετεχόντων (participants)
     const isParticipant = user && event.participants && event.participants.some(p => p.id === user.userId);
     const canInteractWithGallery = isOrganizer || isParticipant;
+    const hasEventPassed = new Date(event.dateTime) < new Date();
 
 
     return (
@@ -218,16 +219,22 @@ const EventDetails = () => {
                 </div>
             )}
 
-            {/* UPLOAD ΜΟΝΟ ΑΝ ΕΧΕΙ ΠΡΟΣΒΑΣΗ */}
-            {canInteractWithGallery && (
-                <MediaUpload
-                    eventId={event.id}
-                    onUploadSuccess={() => {
-                        console.log("Φωτογραφίες ανέβηκαν, ανανέωση δεδομένων...");
-                        fetchData(); // Καλούμε ξανά το API για να φέρει αμέσως τις νέες φωτογραφίες στο UI!
-                    }}
-                />
-            )}
+            {/* UPLOAD ΜΟΝΟ ΑΝ ΕΧΕΙ ΠΡΟΣΒΑΣΗ ΚΑΙ ΕΧΕΙ ΠΕΡΑΣΕΙ ΤΟ EVENT */}
+            {canInteractWithGallery ? (
+                hasEventPassed ? (
+                    <MediaUpload
+                        eventId={event.id}
+                        onUploadSuccess={() => {
+                            console.log("Φωτογραφίες ανέβηκαν, ανανέωση δεδομένων...");
+                            fetchData();
+                        }}
+                    />
+                ) : (
+                    <div style={{ marginTop: '30px', padding: '15px', background: '#e8f4f8', color: '#2980b9', borderRadius: '8px', textAlign: 'center' }}>
+                        ⏳ Η δυνατότητα μεταφόρτωσης υλικού θα "ξεκλειδώσει" μετά τη διεξαγωγή της εκδήλωσης!
+                    </div>
+                )
+            ) : null}
 
             {/* Ενότητα Κριτικών */}
             <div style={{ marginTop: '40px' }}>
@@ -254,9 +261,13 @@ const EventDetails = () => {
                 </div>
 
                 {user ? (
-                    <div>
+                    hasEventPassed ? (
                         <ReviewForm eventId={id} onReviewSubmitted={fetchData} />
-                    </div>
+                    ) : (
+                        <div style={{ padding: '20px', textAlign: 'center', background: '#e8f4f8', borderRadius: '10px', color: '#2980b9' }}>
+                            ⏳ Μπορείτε να αφήσετε την κριτική σας μετά την ολοκλήρωση της εκδήλωσης!
+                        </div>
+                    )
                 ) : (
                     <div style={{ padding: '20px', textAlign: 'center', background: '#fdf2f2', borderRadius: '10px', color: '#e74c3c' }}>
                         Πρέπει να είστε <strong>συνδεδεμένος</strong> για να γράψετε κριτική.
