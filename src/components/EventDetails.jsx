@@ -100,8 +100,9 @@ const EventDetails = () => {
             </style>
 
             <div style={{ background: 'white', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
+                {/* ΑΛΛΑΓΗ 1: Το κεντρικό image url κατευθείαν από το Cloudinary */}
                 <img
-                    src={event.imageUrl ? `https://eventhub-backend-c1ow.onrender.com/uploads/${event.imageUrl}` : 'https://via.placeholder.com/800x400'}
+                    src={event.imageUrl ? event.imageUrl : 'https://via.placeholder.com/800x400'}
                     alt={event.title}
                     style={{ width: '100%', height: '400px', objectFit: 'cover' }}
                 />
@@ -188,8 +189,9 @@ const EventDetails = () => {
                                 }}>
                                     {event.gallery.map(image => (
                                         <div key={image.id} className="gallery-item" style={{ position: 'relative' }}>
+                                            {/* ΑΛΛΑΓΗ 2: Το image url της gallery κατευθείαν από το Cloudinary */}
                                             <img
-                                                src={`https://eventhub-backend-c1ow.onrender.com/uploads/${image.imageUrl}`}
+                                                src={image.imageUrl}
                                                 alt="Στιγμιότυπο"
                                                 style={{
                                                     width: '100%',
@@ -227,7 +229,7 @@ const EventDetails = () => {
                                                         fontSize: '1rem',
                                                         boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
                                                         transition: 'opacity 0.2s',
-                                                        opacity: 0, // Ελέγχεται από το CSS παραπάνω
+                                                        opacity: 0,
                                                     }}
                                                 >
                                                     🗑️

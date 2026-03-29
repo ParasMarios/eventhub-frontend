@@ -10,8 +10,8 @@ const EventList = () => {
     const [searchDate, setSearchDate] = useState('');
 
     const handleSearch = (e) => {
-     e.preventDefault();
-     fetchEvents();
+        e.preventDefault();
+        fetchEvents();
     };
 
     const fetchEvents = () => {
@@ -137,10 +137,11 @@ const EventList = () => {
                             boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
                             border: '1px solid #eee',
                             display: 'flex',
-                            flexDirection: 'column' // Για να σπρώξουμε το link στο τέλος
+                            flexDirection: 'column'
                         }}>
+                            {/* ΑΛΛΑΓΗ ΕΔΩ: Παίρνει απευθείας το event.imageUrl από το Cloudinary */}
                             <img
-                                src={event.imageUrl ? `https://eventhub-backend-c1ow.onrender.com/uploads/${event.imageUrl}` : 'https://via.placeholder.com/300x180?text=No+Image'}
+                                src={event.imageUrl ? event.imageUrl : 'https://via.placeholder.com/300x180?text=No+Image'}
                                 alt={event.title}
                                 style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '10px', marginBottom: '15px' }}
                             />
