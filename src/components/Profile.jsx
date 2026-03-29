@@ -50,6 +50,7 @@ const Profile = () => {
         fetchProfileData();
     }, [user]);
 
+    // Συνάρτηση Διαγραφής Δικού μου Event
     const handleDelete = async (eventId, eventTitle) => {
         const confirmDelete = window.confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε την εκδήλωση "${eventTitle}";`);
         if (confirmDelete) {
@@ -60,6 +61,22 @@ const Profile = () => {
             } catch (err) {
                 console.error(err);
                 alert("Σφάλμα διαγραφής.");
+            }
+        }
+    };
+
+    // ΝΕΑ Συνάρτηση: Ακύρωση Συμμετοχής (Unjoin)
+    const handleLeaveEvent = async (eventId, eventTitle) => {
+        const confirmLeave = window.confirm(`Είστε σίγουροι ότι θέλετε να ακυρώσετε τη συμμετοχή σας στην εκδήλωση "${eventTitle}";`);
+        if (confirmLeave) {
+            try {
+                await axios.post(`/api/events/${eventId}/leave`);
+                // Αφαιρούμε το event από τη λίστα άμεσα (για καλύτερο User Experience, χωρίς refresh)
+                setJoinedEvents(joinedEvents.filter(event => event.id !== eventId));
+                alert("Η συμμετοχή σας ακυρώθηκε επιτυχώς!");
+            } catch (err) {
+                console.error("Σφάλμα κατά την ακύρωση συμμετοχής:", err);
+                alert("Υπήρξε πρόβλημα με την ακύρωση. Δοκιμάστε ξανά.");
             }
         }
     };
@@ -129,7 +146,11 @@ const Profile = () => {
                                 <h4 style={{ margin: 0, color: '#34495e' }}>{event.title}</h4>
 
                                 <div style={{ display: 'flex', gap: '8px' }}>
+                                    {/* Κουμπί Προβολής */}
                                     <button onClick={() => navigate(`/event/${event.id}`)} style={{ ...iconButtonStyle, background: '#27ae60' }} title="Προβολή">👁️</button>
+
+                                    {/* Κουμπί: Ακύρωση Συμμετοχής */}
+                                    <button onClick={() => handleLeaveEvent(event.id, event.title)} style={{ ...iconButtonStyle, background: '#e74c3c' }} title="Ακύρωση Συμμετοχής">❌</button>
                                 </div>
                             </div>
                         ))
