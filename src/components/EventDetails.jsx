@@ -356,7 +356,10 @@ const EventDetails = () => {
                                             ★ {review.overallRating ? review.overallRating.toFixed(1) : "0.0"}
                                         </span>
                                     </div>
-                                    <p style={{ margin: 0, color: '#34495e', lineHeight: '1.6' }}>"{review.comment}"</p>
+                                    <div
+                                        style={{ margin: 0, color: '#34495e', lineHeight: '1.6', marginTop: '10px' }}
+                                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(review.comment) }}
+                                    />
                                 </div>
                             );
                         })

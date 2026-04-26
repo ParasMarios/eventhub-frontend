@@ -1,6 +1,8 @@
 import React, {useContext, useState} from 'react';
 import axios from 'axios';
 import {AuthContext} from "../context/AuthContext.jsx";
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 
 const ReviewForm = ({ eventId, onReviewSubmitted }) => {
@@ -51,13 +53,15 @@ const ReviewForm = ({ eventId, onReviewSubmitted }) => {
             <form onSubmit={handleSubmit}>
                 {renderStars("Συνολικά", "overallRating")}
 
-                <textarea
-                    placeholder="Γράψτε το σχόλιό σας εδώ..."
-                    value={formData.comment}
-                    onChange={(e) => setFormData({...formData, comment: e.target.value})}
-                    style={{ width: '100%', height: '100px', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginTop: '10px' }}
-                    required
-                />
+                <div style={{ marginBottom: '50px' }}>
+                    <label style={{ fontWeight: 'bold', fontSize: '0.9rem', display: 'block', marginBottom: '5px' }}>Το Σχόλιό σας</label>
+                    <ReactQuill
+                        theme="snow"
+                        value={comment}
+                        onChange={setComment}
+                        style={{ height: '150px', background: 'white' }}
+                    />
+                </div>
 
                 <button type="submit" style={{ marginTop: '15px', padding: '10px 25px', background: '#3498db', color: '#fff', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}>
                     Υποβολή Κριτικής
