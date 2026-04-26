@@ -4,26 +4,26 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 const EditEvent = () => {
-    const { id } = useParams(); // Το ID του event από το URL
+    const { id } = useParams();
     const { user } = useContext(AuthContext);
-    const [formData, setFormData] = useState({ title: '', description: '', location: '', dateTime: '' });
+    const [formData, setFormData] = useState({ title: '', description: '', location: '', dateTime: '', endDateTime: '' });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Φόρτωση των δεδομένων του event για να γεμίσουν τα πεδία
         axios.get(`/api/events/${id}`)
             .then(res => {
                 const event = res.data;
-                // Μετατροπή ημερομηνίας σε format: YYYY-MM-DDTHH:mm
                 const formattedDate = event.dateTime ? event.dateTime.substring(0, 16) : '';
+                const formattedEndDate = event.endDateTime ? event.endDateTime.substring(0, 16) : '';
 
                 setFormData({
                     title: event.title,
                     description: event.description,
                     location: event.location,
-                    dateTime: formattedDate
+                    dateTime: formattedDate,
+                    endDateTime: formattedEndDate
                 });
                 setLoading(false);
             })
@@ -39,9 +39,12 @@ const EditEvent = () => {
         setSaving(true);
 
         try {
-            // Στέλνουμε PUT request με τα νέα στοιχεία
-            // Το Backend θα ελέγξει αν είμαστε ο organizer μέσω του JWT
-            await axios.put(`/api/events/${id}`, formData);
+            const payload = {
+                ...formData,
+                endDateTime: formData.endDateTime ? formData.endDateTime : null
+            };
+
+            await axios.put(`/api/events/${id}`, payload);
             alert("Η εκδήλωση ενημερώθηκε επιτυχώς!");
             navigate('/profile');
         } catch (err) {
@@ -59,39 +62,58 @@ const EditEvent = () => {
             <h2 style={{ textAlign: 'center', color: '#2c3e50' }}>Επεξεργασία Εκδήλωσης</h2>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '30px' }}>
 
-                <label style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Τίτλος</label>
-                <input
-                    type="text"
-                    value={formData.title}
-                    required
-                    style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
-                    onChange={e => setFormData({...formData, title: e.target.value})}
-                />
+                <div>
+                    <label style={{ fontWeight: 'bold', fontSize: '0.9rem', display: 'block', marginBottom: '5px' }}>Τίτλος</label>
+                    <input
+                        type="text"
+                        value={formData.title}
+                        required
+                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', boxSizing: 'border-box' }}
+                        onChange={e => setFormData({...formData, title: e.target.value})}
+                    />
+                </div>
 
-                <label style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Περιγραφή</label>
-                <textarea
-                    value={formData.description}
-                    rows="5"
-                    style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
-                    onChange={e => setFormData({...formData, description: e.target.value})}
-                />
+                <div>
+                    <label style={{ fontWeight: 'bold', fontSize: '0.9rem', display: 'block', marginBottom: '5px' }}>Περιγραφή</label>
+                    <textarea
+                        value={formData.description}
+                        rows="5"
+                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', boxSizing: 'border-box' }}
+                        onChange={e => setFormData({...formData, description: e.target.value})}
+                    />
+                </div>
 
-                <label style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Τοποθεσία</label>
-                <input
-                    type="text"
-                    value={formData.location}
-                    style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
-                    onChange={e => setFormData({...formData, location: e.target.value})}
-                />
+                <div>
+                    <label style={{ fontWeight: 'bold', fontSize: '0.9rem', display: 'block', marginBottom: '5px' }}>Τοποθεσία</label>
+                    <input
+                        type="text"
+                        value={formData.location}
+                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', boxSizing: 'border-box' }}
+                        onChange={e => setFormData({...formData, location: e.target.value})}
+                    />
+                </div>
 
-                <label style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Ημερομηνία & Ώρα</label>
-                <input
-                    type="datetime-local"
-                    value={formData.dateTime}
-                    required
-                    style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
-                    onChange={e => setFormData({...formData, dateTime: e.target.value})}
-                />
+                <div style={{ display: 'flex', gap: '15px', flexDirection: 'column' }}>
+                    <div>
+                        <label style={{ fontWeight: 'bold', fontSize: '0.9rem', display: 'block', marginBottom: '5px' }}>Έναρξη Εκδήλωσης *</label>
+                        <input
+                            type="datetime-local"
+                            value={formData.dateTime}
+                            required
+                            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', boxSizing: 'border-box' }}
+                            onChange={e => setFormData({...formData, dateTime: e.target.value})}
+                        />
+                    </div>
+                    <div>
+                        <label style={{ fontWeight: 'bold', fontSize: '0.9rem', display: 'block', marginBottom: '5px' }}>Λήξη Εκδήλωσης (Προαιρετικό)</label>
+                        <input
+                            type="datetime-local"
+                            value={formData.endDateTime}
+                            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', boxSizing: 'border-box' }}
+                            onChange={e => setFormData({...formData, endDateTime: e.target.value})}
+                        />
+                    </div>
+                </div>
 
                 <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                     <button
