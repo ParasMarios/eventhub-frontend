@@ -107,17 +107,20 @@ const CreateEvent = () => {
                     >
                         <option value="">Επιλέξτε Κατηγορία (Προαιρετικό)</option>
                         {parentCategories.map(parent => (
-                            <optgroup key={parent.id} label={parent.name}>
-                                <option value={parent.id}>-- Γενικά: {parent.name} --</option>
+                            <React.Fragment key={parent.id}>
+                                <option value={parent.id} style={{ fontWeight: 'bold' }}>
+                                    {parent.name}
+                                </option>
+
                                 {categories
                                     .filter(c => c.parent && c.parent.id === parent.id)
                                     .map(child => (
                                         <option key={child.id} value={child.id}>
-                                            {child.name}
+                                            &nbsp;&nbsp;&nbsp;&nbsp;{child.name}
                                         </option>
                                     ))
                                 }
-                            </optgroup>
+                            </React.Fragment>
                         ))}
                     </select>
                 </div>
