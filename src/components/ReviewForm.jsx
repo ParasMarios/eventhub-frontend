@@ -4,7 +4,6 @@ import {AuthContext} from "../context/AuthContext.jsx";
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 
-
 const ReviewForm = ({ eventId, onReviewSubmitted }) => {
     const [formData, setFormData] = useState({
         overallRating: 5,
@@ -53,12 +52,13 @@ const ReviewForm = ({ eventId, onReviewSubmitted }) => {
             <form onSubmit={handleSubmit}>
                 {renderStars("Συνολικά", "overallRating")}
 
+                {/* --- ΑΛΛΑΓΗ ΕΔΩ: Προσαρμογή του state στο formData --- */}
                 <div style={{ marginBottom: '50px' }}>
                     <label style={{ fontWeight: 'bold', fontSize: '0.9rem', display: 'block', marginBottom: '5px' }}>Το Σχόλιό σας</label>
                     <ReactQuill
                         theme="snow"
-                        value={comment}
-                        onChange={setComment}
+                        value={formData.comment}
+                        onChange={(content) => setFormData({...formData, comment: content})}
                         style={{ height: '150px', background: 'white' }}
                     />
                 </div>
