@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import ReviewForm from './ReviewForm';
 import MediaUpload from './MediaUpload';
-import DOMPurify from 'dompurify'; // --- ΑΛΛΑΓΗ: Import DOMPurify ---
+import DOMPurify from 'dompurify';
 
 const EventDetails = () => {
     const { id } = useParams();
