@@ -316,17 +316,50 @@ const EventDetails = () => {
 
                 <div style={{ marginBottom: '40px' }}>
                     {reviews.length > 0 ? (
-                        reviews.map(review => (
-                            <div key={review.id} style={{ background: 'white', padding: '20px', borderRadius: '12px', marginBottom: '15px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                                    <strong>👤 {review.author?.username || "Ανώνυμος"}</strong>
-                                    <span style={{ color: '#f1c40f' }}>
-                                        ★ {review.overallRating ? review.overallRating.toFixed(1) : "0.0"}
-                                    </span>
+                        reviews.map(review => {
+                            const isReviewerParticipant = event.participants && review.author &&
+                                event.participants.some(p => p.id === review.author.id);
+
+                            return (
+                                <div key={review.id} style={{ background: 'white', padding: '20px', borderRadius: '12px', marginBottom: '15px', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', alignItems: 'center' }}>
+
+                                        <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                                            <strong style={{ fontSize: '1.05rem', color: '#2c3e50' }}>
+                                                👤 {review.author?.username || "Ανώνυμος"}
+                                            </strong>
+
+                                            {isReviewerParticipant && (
+                                                <span style={{
+                                                    background: '#d4edda',
+                                                    color: '#155724',
+                                                    padding: '3px 8px',
+                                                    borderRadius: '12px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 'bold',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px'
+                                                }}>
+                                                    ✅ Επιβεβαιωμένη Συμμετοχή
+                                                </span>
+                                            )}
+
+                                            {review.createdAt && (
+                                                <span style={{ color: '#95a5a6', fontSize: '0.85rem', marginLeft: '5px' }}>
+                                                    • {new Date(review.createdAt).toLocaleDateString('el-GR')}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        <span style={{ color: '#f1c40f', fontSize: '1.1rem', fontWeight: 'bold' }}>
+                                            ★ {review.overallRating ? review.overallRating.toFixed(1) : "0.0"}
+                                        </span>
+                                    </div>
+                                    <p style={{ margin: 0, color: '#34495e', lineHeight: '1.6' }}>"{review.comment}"</p>
                                 </div>
-                                <p style={{ margin: 0, color: '#34495e' }}>"{review.comment}"</p>
-                            </div>
-                        ))
+                            );
+                        })
                     ) : (
                         <p style={{ color: '#7f8c8d', fontStyle: 'italic' }}>Δεν υπάρχουν ακόμα κριτικές.</p>
                     )}
