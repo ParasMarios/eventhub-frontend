@@ -4,11 +4,20 @@ import { useNavigate, Link } from 'react-router-dom';
 
 const Register = () => {
     const [userData, setUserData] = useState({ username: '', password: '', email: '' });
+    const [confirmPassword, setConfirmPassword] = useState('');
+
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        //Επαλήθευση κωδικού
+        if (userData.password !== confirmPassword) {
+            alert("Οι κωδικοί πρόσβασης δεν ταιριάζουν. Παρακαλώ προσπαθήστε ξανά!");
+            return;
+        }
+
         setLoading(true);
         try {
             // Κλήση στο API εγγραφής
@@ -47,6 +56,14 @@ const Register = () => {
                     required
                     style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
                     onChange={e => setUserData({...userData, password: e.target.value})}
+                />
+
+                <input
+                    type="password"
+                    placeholder="Επιβεβαίωση Password"
+                    required
+                    style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
+                    onChange={e => setConfirmPassword(e.target.value)}
                 />
 
                 <button
