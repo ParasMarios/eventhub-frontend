@@ -5,7 +5,7 @@ import { AuthContext } from '../context/AuthContext';
 
 const CreateEvent = () => {
     const { user } = useContext(AuthContext);
-    const [formData, setFormData] = useState({ title: '', description: '', location: '', dateTime: '' });
+    const [formData, setFormData] = useState({ title: '', description: '', location: '', dateTime: '', endDateTime: '' });
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -21,13 +21,13 @@ const CreateEvent = () => {
         setLoading(true);
         const data = new FormData();
 
-        // Βεβαιωνόμαστε ότι το id μπαίνει σωστά μέσα στο organizer
         const eventDto = {
             title: formData.title,
             description: formData.description,
             location: formData.location,
             dateTime: formData.dateTime,
-            organizer: { id: parseInt(user.userId) } // Μετατροπή σε αριθμό για σιγουριά
+            endDateTime: formData.endDateTime ? formData.endDateTime : null,
+            organizer: { id: parseInt(user.userId) }
         };
 
         data.append('event', JSON.stringify(eventDto));
@@ -81,14 +81,27 @@ const CreateEvent = () => {
                     onChange={e => setFormData({...formData, location: e.target.value})}
                 />
 
-                <input
-                    type="datetime-local"
-                    required
-                    style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
-                    onChange={e => setFormData({...formData, dateTime: e.target.value})}
-                />
+                <div style={{ display: 'flex', gap: '15px', flexDirection: 'column' }}>
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#666' }}>Έναρξη Εκδήλωσης *</label>
+                        <input
+                            type="datetime-local"
+                            required
+                            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', boxSizing: 'border-box' }}
+                            onChange={e => setFormData({...formData, dateTime: e.target.value})}
+                        />
+                    </div>
 
-                {/* Νέο Input για την Εικόνα - Διατηρώντας το απλό στυλ */}
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#666' }}>Λήξη Εκδήλωσης (Προαιρετικό)</label>
+                        <input
+                            type="datetime-local"
+                            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', boxSizing: 'border-box' }}
+                            onChange={e => setFormData({...formData, endDateTime: e.target.value})}
+                        />
+                    </div>
+                </div>
+
                 <div style={{ padding: '10px', background: '#f9f9f9', borderRadius: '8px', border: '1px dashed #ccc' }}>
                     <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9rem', color: '#666' }}>Φωτογραφία Εκδήλωσης:</label>
                     <input

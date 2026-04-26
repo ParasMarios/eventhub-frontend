@@ -14,7 +14,6 @@ const EventDetails = () => {
     const [loading, setLoading] = useState(true);
     const [joining, setJoining] = useState(false);
 
-    // STATE ΓΙΑ ΤΗΝ GALLERY
     const [showGallery, setShowGallery] = useState(false);
 
     const fetchData = async () => {
@@ -53,7 +52,6 @@ const EventDetails = () => {
         }
     };
 
-    // ΝΕΑ ΣΥΝΑΡΤΗΣΗ: Διαγραφή Φωτογραφίας Gallery
     const handleDeleteImage = async (imageId, imageUrl) => {
         if (!window.confirm("Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή τη φωτογραφία;")) {
             return;
@@ -63,7 +61,6 @@ const EventDetails = () => {
             await axios.delete(`/api/events/images/${imageId}`);
             alert("Η φωτογραφία διαγράφηκε.");
 
-            // Ενημερώνουμε το state αμέσως για να εξαφανιστεί η φωτό χωρίς refresh
             setEvent(prevEvent => ({
                 ...prevEvent,
                 gallery: prevEvent.gallery.filter(img => img.id !== imageId)
@@ -82,15 +79,16 @@ const EventDetails = () => {
     if (loading) return <div style={{ textAlign: 'center', padding: '50px' }}>Φόρτωση...</div>;
     if (!event) return <div style={{ textAlign: 'center', padding: '50px' }}>Το event δεν βρέθηκε.</div>;
 
-    // ΛΟΓΙΚΗ ΕΛΕΓΧΟΥ ΠΡΟΣΒΑΣΗΣ
     const isOrganizer = user && event.organizer && user.userId === event.organizer.id;
     const isParticipant = user && event.participants && event.participants.some(p => p.id === user.userId);
     const canInteractWithGallery = isOrganizer || isParticipant;
-    const hasEventPassed = new Date(event.dateTime) < new Date();
+
+    const hasEventPassed = event.endDateTime
+        ? new Date(event.endDateTime) < new Date()
+        : new Date(event.dateTime) < new Date();
 
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
-            {/* CSS για το hover effect του κουμπιού διαγραφής */}
             <style>
                 {`
                     .gallery-item:hover .delete-btn {
@@ -100,7 +98,6 @@ const EventDetails = () => {
             </style>
 
             <div style={{ background: 'white', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
-                {/* ΑΛΛΑΓΗ 1: Το κεντρικό image url κατευθείαν από το Cloudinary */}
                 <img
                     src={event.imageUrl ? event.imageUrl : 'https://via.placeholder.com/800x400'}
                     alt={event.title}
@@ -118,7 +115,17 @@ const EventDetails = () => {
                             </div>
                         </div>
                     </div>
-                    <p style={{ color: '#7f8c8d' }}>📍 {event.location} | 📅 {new Date(event.dateTime).toLocaleString('el-GR')}</p>
+
+                    <p style={{ color: '#7f8c8d', lineHeight: '1.8' }}>
+                        📍 {event.location} <br/>
+                        📅 Έναρξη: {new Date(event.dateTime).toLocaleString('el-GR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        {event.endDateTime && (
+                            <>
+                                <br/>
+                                🏁 Λήξη: <span style={{ marginLeft: '5px' }}>{new Date(event.endDateTime).toLocaleString('el-GR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                            </>
+                        )}
+                    </p>
 
                     {user && !isOrganizer && !isParticipant && (
                         <button
@@ -157,7 +164,6 @@ const EventDetails = () => {
                     <hr style={{ margin: '20px 0' }} />
                     <p style={{ lineHeight: '1.6', fontSize: '1.1rem' }}>{event.description}</p>
 
-                    {/* --- GALLERY SECTION --- */}
                     {canInteractWithGallery && event.gallery && event.gallery.length > 0 && (
                         <div style={{ marginTop: '40px', padding: '20px', background: '#f8f9fa', borderRadius: '15px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -189,7 +195,6 @@ const EventDetails = () => {
                                 }}>
                                     {event.gallery.map(image => (
                                         <div key={image.id} className="gallery-item" style={{ position: 'relative' }}>
-                                            {/* ΑΛΛΑΓΗ 2: Το image url της gallery κατευθείαν από το Cloudinary */}
                                             <img
                                                 src={image.imageUrl}
                                                 alt="Στιγμιότυπο"
@@ -206,7 +211,6 @@ const EventDetails = () => {
                                                 onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
                                             />
 
-                                            {/* ΚΟΥΜΠΙ ΔΙΑΓΡΑΦΗΣ */}
                                             {user && image.uploader && (user.userId === image.uploader.id || isOrganizer) && (
                                                 <button
                                                     className="delete-btn"
@@ -250,7 +254,6 @@ const EventDetails = () => {
                 </div>
             </div>
 
-            {/* ΠΡΟΒΟΛΗ ΣΥΜΜΕΤΕΧΟΝΤΩΝ ΓΙΑ ΤΟΝ ΔΙΟΡΓΑΝΩΤΗ */}
             {isOrganizer && (
                 <div style={{
                     marginTop: '30px',
@@ -285,7 +288,6 @@ const EventDetails = () => {
                 </div>
             )}
 
-            {/* UPLOAD ΜΟΝΟ ΑΝ ΕΧΕΙ ΠΡΟΣΒΑΣΗ ΚΑΙ ΕΧΕΙ ΠΕΡΑΣΕΙ ΤΟ EVENT */}
             {canInteractWithGallery ? (
                 hasEventPassed ? (
                     <MediaUpload
@@ -297,12 +299,11 @@ const EventDetails = () => {
                     />
                 ) : (
                     <div style={{ marginTop: '30px', padding: '15px', background: '#e8f4f8', color: '#2980b9', borderRadius: '8px', textAlign: 'center' }}>
-                        ⏳ Η δυνατότητα μεταφόρτωσης υλικού θα "ξεκλειδώσει" μετά τη διεξαγωγή της εκδήλωσης!
+                        ⏳ Η δυνατότητα μεταφόρτωσης υλικού θα "ξεκλειδώσει" μετά τη διεξαγωγή (ή λήξη) της εκδήλωσης!
                     </div>
                 )
             ) : null}
 
-            {/* Ενότητα Κριτικών */}
             <div style={{ marginTop: '40px' }}>
                 <h3 style={{ borderBottom: '2px solid #3498db', display: 'inline-block', marginBottom: '20px' }}>
                     Κριτικές Χρηστών
