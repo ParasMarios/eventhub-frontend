@@ -5,9 +5,18 @@ import { Link } from 'react-router-dom';
 const EventList = () => {
     const [events, setEvents] = useState([]);
 
+    const [categories, setCategories] = useState([]);
+
     const [searchTitle, setSearchTitle] = useState('');
     const [searchLocation, setSearchLocation] = useState('');
     const [searchDate, setSearchDate] = useState('');
+    const [searchCategory, setSearchCategory] = useState(''); // Νέο state αναζήτησης
+
+    useEffect(() => {
+        axios.get('/api/categories')
+            .then(res => setCategories(res.data))
+            .catch(err => console.error("Σφάλμα φόρτωσης κατηγοριών:", err));
+    }, []);
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -19,7 +28,8 @@ const EventList = () => {
             params: {
                 title: searchTitle || null,
                 location: searchLocation || null,
-                date: searchDate || null
+                date: searchDate || null,
+                categoryId: searchCategory || null
             }
         })
             .then(response => {
@@ -36,12 +46,13 @@ const EventList = () => {
         }, 500);
 
         return () => clearTimeout(delaySearch);
-    }, [searchTitle, searchLocation, searchDate]);
+    }, [searchTitle, searchLocation, searchDate, searchCategory]);
 
     const clearFilters = () => {
         setSearchTitle('');
         setSearchLocation('');
         setSearchDate('');
+        setSearchCategory(''); // Καθαρισμός επιλογής
     };
 
     const inputStyle = {
@@ -51,8 +62,11 @@ const EventList = () => {
         border: '1px solid #ddd',
         outline: 'none',
         fontSize: '1rem',
-        fontFamily: 'inherit'
+        fontFamily: 'inherit',
+        backgroundColor: 'white'
     };
+
+    const parentCategories = categories.filter(c => !c.parent);
 
     return (
         <div>
@@ -63,7 +77,7 @@ const EventList = () => {
                     marginBottom: '30px',
                     display: 'flex',
                     gap: '10px',
-                    flexWrap: 'wrap', // Αν η οθόνη είναι μικρή, θα πάνε από κάτω
+                    flexWrap: 'wrap',
                     alignItems: 'center'
                 }}
             >
@@ -90,6 +104,27 @@ const EventList = () => {
                     style={{ ...inputStyle, width: '160px', color: searchDate ? '#2c3e50' : '#7f8c8d' }}
                 />
 
+                <select
+                    value={searchCategory}
+                    onChange={(e) => setSearchCategory(e.target.value)}
+                    style={inputStyle}
+                >
+                    <option value="">Όλες οι Κατηγορίες</option>
+                    {parentCategories.map(parent => (
+                        <optgroup key={parent.id} label={parent.name}>
+                            <option value={parent.id}>-- Όλα: {parent.name} --</option>
+                            {categories
+                                .filter(c => c.parent && c.parent.id === parent.id)
+                                .map(child => (
+                                    <option key={child.id} value={child.id}>
+                                        {child.name}
+                                    </option>
+                                ))
+                            }
+                        </optgroup>
+                    ))}
+                </select>
+
                 <button
                     type="submit"
                     style={{
@@ -105,7 +140,6 @@ const EventList = () => {
                     Αναζήτηση
                 </button>
 
-                {/* Κουμπί Καθαρισμού Φίλτρων */}
                 <button
                     type="button"
                     onClick={clearFilters}
@@ -126,7 +160,6 @@ const EventList = () => {
                 </button>
             </form>
 
-            {/* --- ΛΙΣΤΑ EVENTS (GRID) --- */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '25px' }}>
                 {events.length > 0 ? (
                     events.map(event => (
@@ -139,7 +172,6 @@ const EventList = () => {
                             display: 'flex',
                             flexDirection: 'column'
                         }}>
-                            {/* ΑΛΛΑΓΗ ΕΔΩ: Παίρνει απευθείας το event.imageUrl από το Cloudinary */}
                             <img
                                 src={event.imageUrl ? event.imageUrl : 'https://via.placeholder.com/300x180?text=No+Image'}
                                 alt={event.title}
@@ -152,12 +184,24 @@ const EventList = () => {
                                 <p style={{ color: '#7f8c8d', margin: '0 0 5px 0' }}>
                                     📍 {event.location}
                                 </p>
-                                <p style={{ color: '#7f8c8d', margin: '0' }}>
+                                <p style={{ color: '#7f8c8d', margin: '0 0 5px 0' }}>
                                     📅 {new Date(event.dateTime).toLocaleDateString('el-GR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                                 </p>
+                                {event.category && (
+                                    <span style={{
+                                        display: 'inline-block',
+                                        padding: '4px 8px',
+                                        backgroundColor: '#e8f4f8',
+                                        color: '#2980b9',
+                                        borderRadius: '4px',
+                                        fontSize: '0.8rem',
+                                        marginTop: '5px'
+                                    }}>
+                                        🏷️ {event.category.name}
+                                    </span>
+                                )}
                             </div>
 
-                            {/* Χρησιμοποιούμε margin-top: auto για να πάει το link πάντα κάτω κάτω στην κάρτα */}
                             <Link to={`/event/${event.id}`} style={{
                                 color: '#3498db',
                                 fontWeight: 'bold',

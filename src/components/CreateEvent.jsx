@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
@@ -7,10 +7,18 @@ import 'react-quill-new/dist/quill.snow.css';
 
 const CreateEvent = () => {
     const { user } = useContext(AuthContext);
-    const [formData, setFormData] = useState({ title: '', description: '', location: '', dateTime: '', endDateTime: '' });
+    const [formData, setFormData] = useState({ title: '', description: '', location: '', dateTime: '', endDateTime: '', categoryId: '' });
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
+
+    const [categories, setCategories] = useState([]);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        axios.get('/api/categories')
+            .then(res => setCategories(res.data))
+            .catch(err => console.error("Σφάλμα φόρτωσης κατηγοριών:", err));
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,7 +37,8 @@ const CreateEvent = () => {
             location: formData.location,
             dateTime: formData.dateTime,
             endDateTime: formData.endDateTime ? formData.endDateTime : null,
-            organizer: { id: parseInt(user.userId) }
+            organizer: { id: parseInt(user.userId) },
+            category: formData.categoryId ? { id: parseInt(formData.categoryId) } : null
         };
 
         data.append('event', JSON.stringify(eventDto));
@@ -56,6 +65,9 @@ const CreateEvent = () => {
             </div>
         );
     }
+
+    // Φιλτράρισμα για να βρούμε τους "γονείς" (κύριες κατηγορίες)
+    const parentCategories = categories.filter(c => !c.parent);
 
     return (
         <div style={{ maxWidth: '600px', margin: '0 auto', background: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 5px 20px rgba(0,0,0,0.05)' }}>
@@ -85,6 +97,30 @@ const CreateEvent = () => {
                     style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
                     onChange={e => setFormData({...formData, location: e.target.value})}
                 />
+
+                <div>
+                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#666' }}>Κατηγορία</label>
+                    <select
+                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', boxSizing: 'border-box', backgroundColor: 'white' }}
+                        value={formData.categoryId}
+                        onChange={e => setFormData({...formData, categoryId: e.target.value})}
+                    >
+                        <option value="">Επιλέξτε Κατηγορία (Προαιρετικό)</option>
+                        {parentCategories.map(parent => (
+                            <optgroup key={parent.id} label={parent.name}>
+                                <option value={parent.id}>-- Γενικά: {parent.name} --</option>
+                                {categories
+                                    .filter(c => c.parent && c.parent.id === parent.id)
+                                    .map(child => (
+                                        <option key={child.id} value={child.id}>
+                                            {child.name}
+                                        </option>
+                                    ))
+                                }
+                            </optgroup>
+                        ))}
+                    </select>
+                </div>
 
                 <div style={{ display: 'flex', gap: '15px', flexDirection: 'column' }}>
                     <div>
