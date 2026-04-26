@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import ReviewForm from './ReviewForm';
 import MediaUpload from './MediaUpload';
+import DOMPurify from 'dompurify'; // --- ΑΛΛΑΓΗ: Import DOMPurify ---
 
 const EventDetails = () => {
     const { id } = useParams();
@@ -162,7 +163,11 @@ const EventDetails = () => {
                     )}
 
                     <hr style={{ margin: '20px 0' }} />
-                    <p style={{ lineHeight: '1.6', fontSize: '1.1rem' }}>{event.description}</p>
+
+                    <div
+                        style={{ lineHeight: '1.6', fontSize: '1.1rem', marginTop: '20px' }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.description) }}
+                    />
 
                     {canInteractWithGallery && event.gallery && event.gallery.length > 0 && (
                         <div style={{ marginTop: '40px', padding: '20px', background: '#f8f9fa', borderRadius: '15px' }}>

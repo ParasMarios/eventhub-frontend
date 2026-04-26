@@ -2,6 +2,8 @@ import React, {useContext, useState} from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const CreateEvent = () => {
     const { user } = useContext(AuthContext);
@@ -67,12 +69,15 @@ const CreateEvent = () => {
                     onChange={e => setFormData({...formData, title: e.target.value})}
                 />
 
-                <textarea
-                    placeholder="Περιγραφή"
-                    rows="5"
-                    style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
-                    onChange={e => setFormData({...formData, description: e.target.value})}
-                />
+                <div style={{ marginBottom: '40px' }}>
+                    <label style={{ fontWeight: 'bold', fontSize: '0.9rem', display: 'block', marginBottom: '5px' }}>Περιγραφή Εκδήλωσης</label>
+                    <ReactQuill
+                        theme="snow"
+                        value={formData.description}
+                        onChange={(content) => setFormData({...formData, description: content})}
+                        style={{ height: '200px', background: 'white' }}
+                    />
+                </div>
 
                 <input
                     type="text"

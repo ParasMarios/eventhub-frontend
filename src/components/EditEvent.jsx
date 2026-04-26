@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const EditEvent = () => {
     const { id } = useParams();
@@ -73,13 +75,13 @@ const EditEvent = () => {
                     />
                 </div>
 
-                <div>
+                <div style={{ marginBottom: '40px' }}>
                     <label style={{ fontWeight: 'bold', fontSize: '0.9rem', display: 'block', marginBottom: '5px' }}>Περιγραφή</label>
-                    <textarea
+                    <ReactQuill
+                        theme="snow"
                         value={formData.description}
-                        rows="5"
-                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', boxSizing: 'border-box' }}
-                        onChange={e => setFormData({...formData, description: e.target.value})}
+                        onChange={(content) => setFormData({...formData, description: content})}
+                        style={{ height: '200px', background: 'white' }}
                     />
                 </div>
 
