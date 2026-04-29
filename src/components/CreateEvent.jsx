@@ -4,13 +4,37 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+let DefaultIcon = L.icon({
+    iconUrl: icon,
+    shadowUrl: iconShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
+});
+L.Marker.prototype.options.icon = DefaultIcon;
+
+const LocationMarker = ({ position, setPosition }) => {
+    useMapEvents({
+        click(e) {
+            setPosition(e.latlng);
+        },
+    });
+    return position === null ? null : <Marker position={position}></Marker>;
+};
 
 const CreateEvent = () => {
     const { user } = useContext(AuthContext);
     const [formData, setFormData] = useState({ title: '', description: '', location: '', dateTime: '', endDateTime: '', categoryId: '' });
+
+    const [position, setPosition] = useState(null);
+
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
-
     const [categories, setCategories] = useState([]);
     const navigate = useNavigate();
 
@@ -28,6 +52,11 @@ const CreateEvent = () => {
             return;
         }
 
+        if (!position) {
+            alert("Παρακαλώ κάντε κλικ στον χάρτη για να δηλώσετε την ακριβή τοποθεσία!");
+            return;
+        }
+
         setLoading(true);
         const data = new FormData();
 
@@ -35,6 +64,8 @@ const CreateEvent = () => {
             title: formData.title,
             description: formData.description,
             location: formData.location,
+            latitude: position.lat,
+            longitude: position.lng,
             dateTime: formData.dateTime,
             endDateTime: formData.endDateTime ? formData.endDateTime : null,
             organizer: { id: parseInt(user.userId) },
@@ -66,7 +97,6 @@ const CreateEvent = () => {
         );
     }
 
-    // Φιλτράρισμα για να βρούμε τους "γονείς" (κύριες κατηγορίες)
     const parentCategories = categories.filter(c => !c.parent);
 
     return (
@@ -91,12 +121,32 @@ const CreateEvent = () => {
                     />
                 </div>
 
-                <input
-                    type="text"
-                    placeholder="Τοποθεσία"
-                    style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
-                    onChange={e => setFormData({...formData, location: e.target.value})}
-                />
+                {/* --- ΤΟΠΟΘΕΣΙΑ ΚΑΙ ΧΑΡΤΗΣ --- */}
+                <div style={{ padding: '15px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
+                    <label style={{ fontWeight: 'bold', fontSize: '0.9rem', display: 'block', marginBottom: '5px' }}>Τοποθεσία (Κείμενο & Χάρτης) *</label>
+
+                    <input
+                        type="text"
+                        placeholder="π.χ. ΟΑΚΑ, Μαρούσι"
+                        required
+                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', boxSizing: 'border-box', marginBottom: '15px' }}
+                        onChange={e => setFormData({...formData, location: e.target.value})}
+                    />
+
+                    <p style={{ fontSize: '0.85rem', color: '#7f8c8d', marginBottom: '10px' }}>
+                        Κάντε κλικ στον χάρτη για να επιλέξετε το ακριβές στίγμα της εκδήλωσης.
+                    </p>
+
+                    <div style={{ height: '250px', width: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ddd' }}>
+                        <MapContainer center={[38.2, 23.8]} zoom={6} style={{ height: '100%', width: '100%' }}>
+                            <TileLayer
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            />
+                            <LocationMarker position={position} setPosition={setPosition} />
+                        </MapContainer>
+                    </div>
+                </div>
 
                 <div>
                     <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9rem', color: '#666' }}>Κατηγορία</label>
@@ -111,7 +161,6 @@ const CreateEvent = () => {
                                 <option value={parent.id} style={{ fontWeight: 'bold' }}>
                                     {parent.name}
                                 </option>
-
                                 {categories
                                     .filter(c => c.parent && c.parent.id === parent.id)
                                     .map(child => (

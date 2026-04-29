@@ -5,6 +5,7 @@ import { AuthContext } from '../context/AuthContext';
 import ReviewForm from './ReviewForm';
 import MediaUpload from './MediaUpload';
 import DOMPurify from 'dompurify';
+import {MapContainer, Marker, TileLayer} from "react-leaflet";
 
 const EventDetails = () => {
     const { id } = useParams();
@@ -367,6 +368,29 @@ const EventDetails = () => {
                         <p style={{ color: '#7f8c8d', fontStyle: 'italic' }}>Δεν υπάρχουν ακόμα κριτικές.</p>
                     )}
                 </div>
+
+                {/* --- ΧΑΡΤΗΣ ΤΟΠΟΘΕΣΙΑΣ --- */}
+                {event.latitude && event.longitude && (
+                    <div style={{ marginTop: '30px' }}>
+                        <h3 style={{ marginBottom: '15px' }}>📍 Τοποθεσία στο Χάρτη</h3>
+                        <div style={{ height: '300px', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
+                            <MapContainer center={[event.latitude, event.longitude]} zoom={15} style={{ height: '100%', width: '100%' }}>
+                                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                <Marker position={[event.latitude, event.longitude]} />
+                            </MapContainer>
+                        </div>
+                        <div style={{ marginTop: '10px', textAlign: 'right' }}>
+                            <a
+                                href={`https://www.google.com/maps/dir/?api=1&destination=${event.latitude},${event.longitude}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ color: '#3498db', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem' }}
+                            >
+                                🚗 Οδηγίες Πλοήγησης (Google Maps) →
+                            </a>
+                        </div>
+                    </div>
+                )}
 
                 {user ? (
                     hasEventPassed ? (
