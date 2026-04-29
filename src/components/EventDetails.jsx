@@ -369,6 +369,61 @@ const EventDetails = () => {
                     )}
                 </div>
 
+                {/* --- ΠΡΟΒΟΛΗ ΕΙΣΙΤΗΡΙΩΝ & ΚΡΑΤΗΣΕΩΝ --- */}
+                {(event.tickets?.length > 0 || event.bookingUrl || event.bookingDescription) && (
+                    <div style={{ marginTop: '30px', padding: '25px', background: '#f0f4f8', borderRadius: '12px', borderLeft: '5px solid #3498db' }}>
+                        <h3 style={{ marginTop: 0, color: '#2c3e50', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            🎟️ Πληροφορίες Εισιτηρίων
+                        </h3>
+
+                        {/* Τύποι Εισιτηρίων */}
+                        {event.tickets?.length > 0 && (
+                            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px 0' }}>
+                                {event.tickets.map(ticket => (
+                                    <li key={ticket.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px dashed #cbd5e1' }}>
+                                        <strong>{ticket.type}</strong>
+                                        <span style={{ fontWeight: 'bold', color: ticket.price === 0 ? '#27ae60' : '#2c3e50' }}>
+                                                {ticket.price === 0 ? "ΔΩΡΕΑΝ" : `${ticket.price.toFixed(2)} €`}
+                                            </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+
+                        {/* Οδηγίες Κράτησης */}
+                        {event.bookingDescription && (
+                            <div style={{ marginBottom: '20px', color: '#475569', fontSize: '0.95rem', lineHeight: '1.5' }}>
+                                <strong>Οδηγίες:</strong> {event.bookingDescription}
+                            </div>
+                        )}
+
+                        {/* Κουμπί Αγοράς/Κράτησης */}
+                        {event.bookingUrl && (
+                            <a
+                                href={event.bookingUrl.startsWith('http') ? event.bookingUrl : `https://${event.bookingUrl}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                    display: 'inline-block',
+                                    width: '100%',
+                                    textAlign: 'center',
+                                    padding: '12px',
+                                    background: '#3498db',
+                                    color: 'white',
+                                    textDecoration: 'none',
+                                    borderRadius: '8px',
+                                    fontWeight: 'bold',
+                                    transition: 'background 0.2s'
+                                }}
+                                onMouseOver={(e) => e.target.style.background = '#2980b9'}
+                                onMouseOut={(e) => e.target.style.background = '#3498db'}
+                            >
+                                Κλείστε Θέση / Αγορά Εισιτηρίου 🔗
+                            </a>
+                        )}
+                    </div>
+                )}
+
                 {/* --- ΧΑΡΤΗΣ ΤΟΠΟΘΕΣΙΑΣ --- */}
                 {event.latitude && event.longitude && (
                     <div style={{ marginTop: '30px' }}>
