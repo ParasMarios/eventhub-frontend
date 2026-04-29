@@ -87,8 +87,24 @@ const Profile = () => {
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
             {/* Κάρτα Χρήστη */}
-            <div style={{ background: 'white', padding: '25px', borderRadius: '15px', marginBottom: '40px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
-                <h2 style={{ margin: 0, color: '#2c3e50' }}>👤 Το Προφίλ μου</h2>
+            <div style={{ background: 'white', padding: '25px', borderRadius: '15px', marginBottom: '40px', boxShadow: '0 4px 10px rgba(0,0,0,0.05)', border: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+                <Link to="/edit-profile" style={{
+                    padding: '10px 20px',
+                    background: '#f39c12',
+                    color: 'white',
+                    textDecoration: 'none',
+                    borderRadius: '8px',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'background 0.3s'
+                }}
+                      onMouseOver={(e) => e.target.style.background = '#e67e22'}
+                      onMouseOut={(e) => e.target.style.background = '#f39c12'}
+                >
+                    👤 Το Προφίλ μου
+                </Link>
             </div>
 
             {/* ΕΝΟΤΗΤΑ 1: ΟΙ ΕΚΔΗΛΩΣΕΙΣ ΜΟΥ */}
