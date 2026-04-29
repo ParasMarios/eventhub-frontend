@@ -105,8 +105,23 @@ const CreateEvent = () => {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
                         {tickets.map((ticket, index) => (
                             <div key={index} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                                <input type="text" placeholder="Τύπος (π.χ. Κανονικό, VIP)" style={{ flex: 2, padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }}
-                                       value={ticket.type} onChange={e => handleTicketChange(index, 'type', e.target.value)} />
+                                <select
+                                    style={{ flex: 2, padding: '10px', borderRadius: '8px', border: '1px solid #ddd', backgroundColor: 'white' }}
+                                    value={ticket.type}
+                                    onChange={e => handleTicketChange(index, 'type', e.target.value)}
+                                    required
+                                >
+                                    <option value="" disabled>Επιλέξτε Τύπο...</option>
+                                    <option value="Γενική Είσοδος">Γενική Είσοδος</option>
+                                    <option value="Κανονικό">Κανονικό</option>
+                                    <option value="Φοιτητικό">Φοιτητικό</option>
+                                    <option value="Μειωμένο / Ανέργων">Μειωμένο / Ανέργων</option>
+                                    <option value="Παιδικό">Παιδικό</option>
+                                    <option value="VIP">VIP</option>
+                                    <option value="Early Bird">Early Bird</option>
+                                    <option value="Οικογενειακό">Οικογενειακό</option>
+                                    <option value="Ομαδικό">Ομαδικό</option>
+                                </select>
 
                                 <input type="number" step="0.01" min="0" placeholder="Τιμή (€) - Αφήστε κενό για Δωρεάν" style={{ flex: 1.5, padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }}
                                        value={ticket.price} onChange={e => handleTicketChange(index, 'price', e.target.value)} />
