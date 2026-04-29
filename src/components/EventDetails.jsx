@@ -5,7 +5,7 @@ import { AuthContext } from '../context/AuthContext';
 import ReviewForm from './ReviewForm';
 import MediaUpload from './MediaUpload';
 import DOMPurify from 'dompurify';
-import {MapContainer, Marker, TileLayer} from "react-leaflet";
+import { MapContainer, Marker, TileLayer } from "react-leaflet";
 
 const EventDetails = () => {
     const { id } = useParams();
@@ -54,6 +54,21 @@ const EventDetails = () => {
         }
     };
 
+    const handleLeaveEvent = async () => {
+        if (!window.confirm("Θέλετε σίγουρα να ακυρώσετε τη συμμετοχή σας;")) return;
+        setJoining(true);
+        try {
+            await axios.post(`/api/events/${id}/leave`);
+            alert("Η συμμετοχή σας ακυρώθηκε.");
+            fetchData();
+        } catch (err) {
+            console.error(err);
+            alert("Σφάλμα κατά την ακύρωση συμμετοχής.");
+        } finally {
+            setJoining(false);
+        }
+    };
+
     const handleDeleteImage = async (imageId, imageUrl) => {
         if (!window.confirm("Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή τη φωτογραφία;")) {
             return;
@@ -93,10 +108,10 @@ const EventDetails = () => {
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
             <style>
                 {`
-                    .gallery-item:hover .delete-btn {
-                        opacity: 1 !important;
-                    }
-                `}
+                .gallery-item:hover .delete-btn {
+                    opacity: 1 !important;
+                }
+            `}
             </style>
 
             <div style={{ background: 'white', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}>
@@ -129,38 +144,81 @@ const EventDetails = () => {
                         )}
                     </p>
 
-                    {user && !isOrganizer && !isParticipant && (
-                        <button
-                            onClick={handleJoin}
-                            disabled={joining}
-                            style={{
-                                background: '#27ae60',
-                                color: 'white',
-                                border: 'none',
-                                padding: '12px 25px',
-                                borderRadius: '8px',
-                                fontWeight: 'bold',
-                                cursor: 'pointer',
-                                marginTop: '10px',
-                                transition: '0.3s'
-                            }}
-                        >
-                            {joining ? "Παρακαλώ περιμένετε..." : "➕ Join Event"}
-                        </button>
-                    )}
+                    {/* --- ΕΞΥΠΝΟ ΚΟΥΜΠΙ ΣΥΜΜΕΤΟΧΗΣ --- */}
+                    {user && !isOrganizer && (
+                        <div style={{ marginTop: '20px' }}>
+                            {(() => {
+                                const eventDate = new Date(event.dateTime);
+                                const now = new Date();
+                                const isPast = now > eventDate;
+                                const isParticipantLocal = event.participants?.some(p => p.id === parseInt(user.userId));
 
-                    {isParticipant && (
-                        <span style={{
-                            display: 'inline-block',
-                            marginTop: '10px',
-                            padding: '8px 15px',
-                            background: '#d4edda',
-                            color: '#155724',
-                            borderRadius: '8px',
-                            fontWeight: 'bold'
-                        }}>
-                            ✅ Συμμετέχετε σε αυτή την εκδήλωση!
-                        </span>
+                                if (isPast) {
+                                    return isParticipantLocal ? (
+                                        <div style={{
+                                            padding: '12px 25px',
+                                            background: '#27ae60',
+                                            color: 'white',
+                                            borderRadius: '8px',
+                                            fontWeight: 'bold',
+                                            display: 'inline-block',
+                                            cursor: 'default'
+                                        }}>
+                                            ✅ Συμμετείχα (Attended)
+                                        </div>
+                                    ) : (
+                                        <button
+                                            disabled
+                                            style={{
+                                                padding: '12px 25px',
+                                                background: '#bdc3c7',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '8px',
+                                                fontWeight: 'bold',
+                                                cursor: 'not-allowed'
+                                            }}
+                                        >
+                                            Η εκδήλωση έχει λήξει
+                                        </button>
+                                    );
+                                }
+
+                                return isParticipantLocal ? (
+                                    <button
+                                        onClick={handleLeaveEvent}
+                                        disabled={joining}
+                                        style={{
+                                            padding: '12px 25px',
+                                            background: '#e74c3c',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            fontWeight: 'bold'
+                                        }}
+                                    >
+                                        {joining ? "Ακύρωση..." : "Ακύρωση Συμμετοχής"}
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleJoin}
+                                        disabled={joining}
+                                        style={{
+                                            padding: '12px 25px',
+                                            background: '#2ecc71',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            fontWeight: 'bold'
+                                        }}
+                                    >
+                                        {joining ? "Παρακαλώ περιμένετε..." : "➕ Δήλωση Συμμετοχής (Join)"}
+                                    </button>
+                                );
+                            })()}
+                        </div>
                     )}
 
                     <hr style={{ margin: '20px 0' }} />
@@ -282,8 +340,8 @@ const EventDetails = () => {
                                     boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
                                     border: '1px solid #eee'
                                 }}>
-                        @{participant.username}
-                    </span>
+                    @{participant.username}
+                </span>
                             ))
                         ) : (
                             <p style={{ color: '#7f8c8d', fontStyle: 'italic', margin: 0 }}>
@@ -309,6 +367,84 @@ const EventDetails = () => {
                     </div>
                 )
             ) : null}
+
+            {/* --- ΠΡΟΒΟΛΗ ΕΙΣΙΤΗΡΙΩΝ & ΚΡΑΤΗΣΕΩΝ --- */}
+            {(event.tickets?.length > 0 || event.bookingUrl || event.bookingDescription) && (
+                <div style={{ marginTop: '30px', padding: '25px', background: '#f0f4f8', borderRadius: '12px', borderLeft: '5px solid #3498db' }}>
+                    <h3 style={{ marginTop: 0, color: '#2c3e50', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        🎟️ Πληροφορίες Εισιτηρίων
+                    </h3>
+
+                    {/* Τύποι Εισιτηρίων */}
+                    {event.tickets?.length > 0 && (
+                        <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px 0' }}>
+                            {event.tickets.map(ticket => (
+                                <li key={ticket.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px dashed #cbd5e1' }}>
+                                    <strong>{ticket.type}</strong>
+                                    <span style={{ fontWeight: 'bold', color: ticket.price === 0 ? '#27ae60' : '#2c3e50' }}>
+                                            {ticket.price === 0 ? "ΔΩΡΕΑΝ" : `${ticket.price.toFixed(2)} €`}
+                                        </span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+
+                    {/* Οδηγίες Κράτησης */}
+                    {event.bookingDescription && (
+                        <div style={{ marginBottom: '20px', color: '#475569', fontSize: '0.95rem', lineHeight: '1.5' }}>
+                            <strong>Οδηγίες:</strong> {event.bookingDescription}
+                        </div>
+                    )}
+
+                    {/* Κουμπί Αγοράς/Κράτησης */}
+                    {event.bookingUrl && (
+                        <a
+                            href={event.bookingUrl.startsWith('http') ? event.bookingUrl : `https://${event.bookingUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                display: 'inline-block',
+                                width: '100%',
+                                textAlign: 'center',
+                                padding: '12px',
+                                background: '#3498db',
+                                color: 'white',
+                                textDecoration: 'none',
+                                borderRadius: '8px',
+                                fontWeight: 'bold',
+                                transition: 'background 0.2s'
+                            }}
+                            onMouseOver={(e) => e.target.style.background = '#2980b9'}
+                            onMouseOut={(e) => e.target.style.background = '#3498db'}
+                        >
+                            Κλείστε Θέση / Αγορά Εισιτηρίου 🔗
+                        </a>
+                    )}
+                </div>
+            )}
+
+            {/* --- ΧΑΡΤΗΣ ΤΟΠΟΘΕΣΙΑΣ --- */}
+            {event.latitude && event.longitude && (
+                <div style={{ marginTop: '30px' }}>
+                    <h3 style={{ marginBottom: '15px' }}>📍 Τοποθεσία στο Χάρτη</h3>
+                    <div style={{ height: '300px', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
+                        <MapContainer center={[event.latitude, event.longitude]} zoom={15} style={{ height: '100%', width: '100%' }}>
+                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                            <Marker position={[event.latitude, event.longitude]} />
+                        </MapContainer>
+                    </div>
+                    <div style={{ marginTop: '10px', textAlign: 'right' }}>
+                        <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=$${event.latitude},${event.longitude}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{ color: '#3498db', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem' }}
+                        >
+                            🚗 Οδηγίες Πλοήγησης (Google Maps) →
+                        </a>
+                    </div>
+                </div>
+            )}
 
             <div style={{ marginTop: '40px' }}>
                 <h3 style={{ borderBottom: '2px solid #3498db', display: 'inline-block', marginBottom: '20px' }}>
@@ -342,20 +478,20 @@ const EventDetails = () => {
                                                     alignItems: 'center',
                                                     gap: '4px'
                                                 }}>
-                                                    ✅ Επιβεβαιωμένη Συμμετοχή
-                                                </span>
+                                                ✅ Επιβεβαιωμένη Συμμετοχή
+                                            </span>
                                             )}
 
                                             {review.createdAt && (
                                                 <span style={{ color: '#95a5a6', fontSize: '0.85rem', marginLeft: '5px' }}>
-                                                    • {new Date(review.createdAt).toLocaleDateString('el-GR')}
-                                                </span>
+                                                • {new Date(review.createdAt).toLocaleDateString('el-GR')}
+                                            </span>
                                             )}
                                         </div>
 
                                         <span style={{ color: '#f1c40f', fontSize: '1.1rem', fontWeight: 'bold' }}>
-                                            ★ {review.overallRating ? review.overallRating.toFixed(1) : "0.0"}
-                                        </span>
+                                        ★ {review.overallRating ? review.overallRating.toFixed(1) : "0.0"}
+                                    </span>
                                     </div>
                                     <div
                                         style={{ margin: 0, color: '#34495e', lineHeight: '1.6', marginTop: '10px' }}
@@ -368,84 +504,6 @@ const EventDetails = () => {
                         <p style={{ color: '#7f8c8d', fontStyle: 'italic' }}>Δεν υπάρχουν ακόμα κριτικές.</p>
                     )}
                 </div>
-
-                {/* --- ΠΡΟΒΟΛΗ ΕΙΣΙΤΗΡΙΩΝ & ΚΡΑΤΗΣΕΩΝ --- */}
-                {(event.tickets?.length > 0 || event.bookingUrl || event.bookingDescription) && (
-                    <div style={{ marginTop: '30px', padding: '25px', background: '#f0f4f8', borderRadius: '12px', borderLeft: '5px solid #3498db' }}>
-                        <h3 style={{ marginTop: 0, color: '#2c3e50', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            🎟️ Πληροφορίες Εισιτηρίων
-                        </h3>
-
-                        {/* Τύποι Εισιτηρίων */}
-                        {event.tickets?.length > 0 && (
-                            <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px 0' }}>
-                                {event.tickets.map(ticket => (
-                                    <li key={ticket.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px dashed #cbd5e1' }}>
-                                        <strong>{ticket.type}</strong>
-                                        <span style={{ fontWeight: 'bold', color: ticket.price === 0 ? '#27ae60' : '#2c3e50' }}>
-                                                {ticket.price === 0 ? "ΔΩΡΕΑΝ" : `${ticket.price.toFixed(2)} €`}
-                                            </span>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-
-                        {/* Οδηγίες Κράτησης */}
-                        {event.bookingDescription && (
-                            <div style={{ marginBottom: '20px', color: '#475569', fontSize: '0.95rem', lineHeight: '1.5' }}>
-                                <strong>Οδηγίες:</strong> {event.bookingDescription}
-                            </div>
-                        )}
-
-                        {/* Κουμπί Αγοράς/Κράτησης */}
-                        {event.bookingUrl && (
-                            <a
-                                href={event.bookingUrl.startsWith('http') ? event.bookingUrl : `https://${event.bookingUrl}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{
-                                    display: 'inline-block',
-                                    width: '100%',
-                                    textAlign: 'center',
-                                    padding: '12px',
-                                    background: '#3498db',
-                                    color: 'white',
-                                    textDecoration: 'none',
-                                    borderRadius: '8px',
-                                    fontWeight: 'bold',
-                                    transition: 'background 0.2s'
-                                }}
-                                onMouseOver={(e) => e.target.style.background = '#2980b9'}
-                                onMouseOut={(e) => e.target.style.background = '#3498db'}
-                            >
-                                Κλείστε Θέση / Αγορά Εισιτηρίου 🔗
-                            </a>
-                        )}
-                    </div>
-                )}
-
-                {/* --- ΧΑΡΤΗΣ ΤΟΠΟΘΕΣΙΑΣ --- */}
-                {event.latitude && event.longitude && (
-                    <div style={{ marginTop: '30px' }}>
-                        <h3 style={{ marginBottom: '15px' }}>📍 Τοποθεσία στο Χάρτη</h3>
-                        <div style={{ height: '300px', borderRadius: '15px', overflow: 'hidden', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
-                            <MapContainer center={[event.latitude, event.longitude]} zoom={15} style={{ height: '100%', width: '100%' }}>
-                                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                <Marker position={[event.latitude, event.longitude]} />
-                            </MapContainer>
-                        </div>
-                        <div style={{ marginTop: '10px', textAlign: 'right' }}>
-                            <a
-                                href={`https://www.google.com/maps/dir/?api=1&destination=${event.latitude},${event.longitude}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                style={{ color: '#3498db', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem' }}
-                            >
-                                🚗 Οδηγίες Πλοήγησης (Google Maps) →
-                            </a>
-                        </div>
-                    </div>
-                )}
 
                 {user ? (
                     hasEventPassed ? (
