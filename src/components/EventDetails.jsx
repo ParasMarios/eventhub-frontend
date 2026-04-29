@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import {Link, useParams} from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import ReviewForm from './ReviewForm';
 import MediaUpload from './MediaUpload';
@@ -123,6 +123,22 @@ const EventDetails = () => {
                 <div style={{ padding: '30px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <h1>{event.title}</h1>
+                        {/* Προβολή Διοργανωτή */}
+                        {event.organizer && (
+                            <div style={{ marginBottom: '15px', fontSize: '1.05rem' }}>
+                                <span style={{ color: '#7f8c8d' }}>Διοργάνωση από: </span>
+                                <Link to={`/organizer/${event.organizer.id}`} style={{
+                                    color: '#3498db',
+                                    fontWeight: 'bold',
+                                    textDecoration: 'none',
+                                    background: '#e8f4f8',
+                                    padding: '4px 10px',
+                                    borderRadius: '15px'
+                                }}>
+                                    🏢 {event.organizer.username}
+                                </Link>
+                            </div>
+                        )}
                         <div style={{ textAlign: 'right', background: '#f8f9fa', padding: '10px', borderRadius: '10px' }}>
                             <div style={{ fontSize: '1.5rem', color: '#f1c40f', fontWeight: 'bold' }}>
                                 ⭐ {stats.averageOverall ? stats.averageOverall.toFixed(1) : "0.0"}

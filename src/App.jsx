@@ -10,6 +10,7 @@ import {useContext} from "react";
 import Register from "./components/Register.jsx";
 import Profile from "./components/Profile.jsx";
 import EditEvent from './components/EditEvent';
+import OrganizerProfile from "./components/OrganizerProfile.jsx";
 
 axios.defaults.baseURL = 'https://eventhub-backend-c1ow.onrender.com';
 
@@ -124,6 +125,7 @@ function App() {
                             <Route path="/create" element={<CreateEvent />} />
                             <Route path="/edit-event/:id" element={<EditEvent />} />
                             <Route path="/event/:id" element={<EventDetails />} />
+                            <Route path="/organizer/:id" element={<OrganizerProfile />} />
                         </Routes>
                     </main>
                 </div>
